@@ -15,7 +15,13 @@ def main():
     # LOGIN SCREEN
     while login_screen == False:
         login_screen = login()
+        
+    #USER MENU
+    print("To register a birth, type in 1")
+    action = input("Choose a task: ")
     
+    if int(action) == 1:
+        one()
         
 
 def login():
@@ -37,7 +43,37 @@ def login():
         return False
     
 def one():
-    pass
+    print("You have chosen to register a birth")
+    
+    while True:
+        fname = input("Please provide a first name: ")
+        if fname != '':
+            break
+    
+    while True:
+        lname = input("Please provide a last name: ")
+        if lname != '':
+            break  
+            
+    while True:
+        gender = input("Please provide the gender: ")
+        if gender.upper() == 'F' or gender.upper() == 'M':
+            break
+        
+    bdate = input("Please provide a birth date: ")
+    
+    while True:
+        bplace = input("Please provide a birth place: ")
+        if bplace != '':
+            break      
+        
+    mot_fname = input("Please provide mother's first name: ")
+    mot_lname = input("Please provide mother's last name: ")
+    fat_fname = input("Please provide father's first name: ")
+    fat_fname = input("Please provide father's last name: ")
+    
+    
+    
 def two():
     pass
 def three():

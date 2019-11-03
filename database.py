@@ -172,7 +172,7 @@ def insert_data():
 
 def main():
     global conn, c
-
+   
     path = "./database_test.db"
     connect(path)
     drop_tables()

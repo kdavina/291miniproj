@@ -2,6 +2,8 @@ import sqlite3
 import getpass
 import re
 import datetime
+import random
+
 def main():
     global conn, c 
     # path = sysargv[1] 
@@ -13,10 +15,10 @@ def main():
     login_screen = False
 
     # LOGIN SCREEN
-    """
+    
     while login_screen == False:
         login_screen, username = login()
-    """
+    
         
     #USER MENU
     print("To register a birth, type in 1")
@@ -29,8 +31,8 @@ def main():
     print("To find a car owner, type in 8")
     action = input("Choose a task: ")
     
-    if int(action) == 1: one(user)
-    elif int(action) == 2: two()
+    if int(action) == 1: one(username)
+    elif int(action) == 2: two(username)
     elif int(action) == 3: three()
     elif int(action) == 4: four()
     elif int(action) == 5: five()
@@ -58,7 +60,7 @@ def login():
         print("Login failed. Try again")
         return False, username
     
-def one(user):
+def one(username):
     print("You have chosen to register a birth")
     
     # Receive information about birth information
@@ -106,22 +108,30 @@ def one(user):
     while True:
         mot_fname = input("Please provide mother's first name: ")
         if mot_fname != '' and mot_fname.isalpha() and len(mot_fname) <= 12:
-            break  
+            break
+        else:
+            print("Invalid entry")
         
     while True:
         mot_lname = input("Please provide mother's last name: ")
         if mot_lname != '' and mot_lname.isalpha() and len(mot_lname) <= 12:
-            break     
+            break
+        else:
+            print("Invalid entry")
     
     while True:
         fat_fname = input("Please provide father's first name: ")
         if fat_fname != '' and fat_fname.isalpha() and len(fat_fname) <= 12:
-            break     
+            break 
+        else:
+            print("Invalid entry")
         
     while True:
         fat_lname = input("Please provide father's last name: ")
         if fat_lname != '' and fat_lname.isalpha() and len(fat_lname) <= 12:
-            break  
+            break
+        else:
+            print("Invalid entry")
     
     # this is checking if the mom and dad is in the database
     if find_parent(mot_fname, mot_lname) == None:
@@ -144,7 +154,7 @@ def one(user):
     # REGISTERING FOR BIRTH
     # use datetime function for registration date and use a query to find the regplace
     regdate = datetime.date.today()
-    c.execute('SELECT city FROM users where uid = ?;', (user,))
+    c.execute('SELECT city FROM users where uid = ?;', (username,))
     regplace = c.fetchone()[0]
     
     # grabbing a random and unique registration
@@ -201,7 +211,7 @@ def missing_parent_info(fname, lname):
             bplace = 'NULL'
             break
         else:
-            if bplace.isalpha():
+            if bplace.isalpha() and len(bplace) <= 20:
                 break      
             else:
                 print("Invalid input")
@@ -212,21 +222,21 @@ def missing_parent_info(fname, lname):
             address = 'NULL'
             break
         else:
-            if address.isalpha() and len(address) < 30:
+            if address.isalpha() and len(address) <= 30:
                 break      
             else:
                 print("Invalid input")        
-                
+    
     while True:
         phone_number = input("Please provide a phone number (123-456-7890): ")
         if phone_number == '':
             phone_number = 'NULL'
             break
         else:
-            if phone_number.isalpha() and len(phone_number) < 12:
+            if len(phone_number) <= 12 and re.match("^[0-9]{3}-[0-9]{3}-[0-9]{4}$", phone_number):
                 break      
             else:
-                print("Invalid input")         
+                print("Invalid input")       
                 
     # at the very end we want to insert this into our database
     c.execute(''' INSERT INTO persons(fname, lname, bdate, bplace, address, phone)
@@ -236,7 +246,7 @@ def missing_parent_info(fname, lname):
 
     
     
-def two():
+def two(username):
     print("You have chosen to register a marriage")
     
     while True:
@@ -270,12 +280,32 @@ def two():
         else:
             print("Incorrect format")
         
-    #if find_partner(prt1_fname, prt1_lname) == None:
-    #    missing_partner_info(prt1_fname, prt1_lname)
-        
     if find_partner(prt2_fname, prt2_lname) == None:
         missing_partner_info(prt2_fname, prt2_lname)
         
+    # REGISTERING FOR MARRIAGE
+    # use datetime function for registration date and use a query to find the registration place
+    registdate = datetime.date.today()
+    c.execute('SELECT city FROM users where uid = ?;', (username,))
+    registplace = c.fetchone()[0]
+    
+    # grabbing a random and unique registration
+    # check that the randomly generated number does not already exist in the database
+    # notice that if we will get an error if we try to subscript a NONE value 
+    # hence, if we try to subscript a NONE value that means that the registnum does not exist in our database
+    while True:
+        registnum = random.randint(1,99999999)
+        registnum = str(registnum)
+        c.execute('SELECT regno FROM marriages WHERE regno = ?;', (registnum,))
+        try:
+            c.fetchone()[0]
+        except TypeError:
+            break
+    
+    c.execute(''' INSERT INTO marriages(regno, regdate, regplace, p1_fname, p1_lname, p2_fname, p2_lname)
+                  VALUES (?,?,?,?,?,?,?)''', 
+                (registnum, registdate, registplace, prt1_fname, prt1_lname, prt2_fname, prt2_lname))
+    conn.commit()
         
 def find_partner(fname, lname):
     c.execute('SELECT fname, lname FROM persons WHERE fname =? AND lname=?;', (fname, lname))
@@ -284,8 +314,13 @@ def find_partner(fname, lname):
 
 # we need first name, last name, birth date, birth place, address and phone. for each partner any column other than first and last can be null
 def missing_partner_info(fname, lname):
+    print('\n')
     print("There seems to be no record of {} {} in our database".format(fname,lname))
     print("Please fill out the information down below. \nHit enter if you do not want to fill this out.")  
+    
+    # Using datetime module to validate date
+    # datetime does not account for months (1-9) having a 0 at the front ex. 01 - January
+    # if our input passes the datetime function and the length is one, then concatenate a 0 at the front
     while True:
         bdate = input("Please provide a birth date (YYYY-MM-DD): ")
         if bdate == '':
@@ -295,6 +330,9 @@ def missing_partner_info(fname, lname):
             try:
                 year, month, day = bdate.split('-')
                 datetime.datetime(int(year),int(month),int(day))
+                if len(month) == 1:
+                    month = "0" + month
+                bdate = year + '-' + month + '-' + day
                 break
             except ValueError:
                 print("Invalid Date")
@@ -335,11 +373,9 @@ def missing_partner_info(fname, lname):
                
                 
     partner_register = 'INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)'
-    #c.execute(''' INSERT INTO persons(fname, lname, bdate, bplace, address, phone)
-    #              VALUES
-    #              (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, address, phone_number))
     c.execute(partner_register, (fname, lname, bdate, bplace, address, phone_number))
     conn.commit()
+
 
 
 def three():
@@ -388,11 +424,95 @@ def three():
         # c.execute("SELECT regdate FROM registrations WHERE regno = ?;", (current_regno,))
         # print(c.fetchone()[0])
 
+
+
 def four():
     ## git check for nan
     pass
+    
+    
+    
 def five():
-    pass
+    print("You have chosen to process a payment")
+    
+    while True:
+        ticket_no = input("Please provide the ticket number you'd like to make a payment to: ")
+        if ticket_no != '' and ticket_no.isdigit() == True:
+            break
+        else:
+            print("Invalid ticket number")
+            
+    if find_ticket(ticket_no) != None:
+        find_fine(ticket_no)
+
+def find_ticket(tno):
+    c.execute('SELECT tno FROM tickets WHERE tno =?;', (tno,))
+    return c.fetchone()[0]
+
+def find_fine(tno):
+    c.execute('SELECT fine FROM tickets WHERE tno =?;', (tno,))
+    fine_leftover = int(c.fetchone()[0])
+    print("The fine amount outstanding for this ticket number is ${}".format(fine_leftover))
+    
+    # # use datetime function for registration date and use a query to find the registration place
+    # pay_date = datetime.date.today()
+    # c.execute('SELECT pdate FROM payments WHERE tno = ?;', (tno,))
+    # old_paydate = str(c.fetchone()[0])
+    
+    # if old_paydate == str(pay_date):
+        # print("You cannot make multiple payments on ticket {} today".format(tno))
+        # payment_invalid()
+    
+    while True:
+        pay_amount = input("Please provide the amount you would like to pay: ")
+        
+        if pay_amount != '' and pay_amount.isdigit() == True:
+            pay_amount = int(pay_amount)
+            payment_balance = int(fine_leftover - pay_amount)
+            if payment_balance <= 0: 
+                print("Invalid amount")
+            else:
+                print("You are making a payment of ${} to ticket number {}".format(pay_amount, tno))
+                print("Your new balance of the ticket fine is {}".format(payment_balance))
+            break
+        else:
+            print("Invalid amount")
+    
+    # use datetime function for registration date and use a query to find the registration place
+    pay_date = datetime.date.today()
+    
+    # c.execute('SELECT pdate FROM marriages WHERE tno = ?;', (tno,))
+    # old_pay_date = c.fetchone[0]
+    
+    # if old_pay_date != pay_date:
+        # update_tickets(tno, pay_date, pay_amount, payment_balance)
+    # else:
+        # print("You cannot make multiple payments on ticket {} today".format(tno))
+    
+    
+    # return tno, pay_date, pay_amount, payment_balance
+    # conn.commit()
+    
+# def update_tickets(tno, pay_date, pay_amount, payment_balance):
+
+    payment_register = 'INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)'
+    c.execute(payment_register, (tno, pay_date, pay_amount))
+    conn.commit()
+    
+    update_tickets = 'UPDATE tickets SET fine=? WHERE tno=?;'
+    c.execute(update_tickets, (payment_balance, tno))
+    conn.commit()
+    
+    return
+    conn.commit()
+    
+# def payment_invalid():
+    # print("Please try payment on this ticket again another day")
+    
+    # conn.commit()
+    
+    
+    
 def six():
     # Enter a first name and a last name to get a driver abstract
     # Driver abstract contains number of tickets, number of demerit notices, total number of demerit points received both within the past 2 years and within the lifetime. 

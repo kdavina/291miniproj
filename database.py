@@ -139,9 +139,19 @@ def insert_data():
     persons_values = [('Amanda', 'Nguyen', '28-01-1999', 'Edmonton', '16115 - 140 Street', '780 902 9107')]
     users_sql = "INSERT INTO users(uid, pwd, utype, fname, lname, city) VALUES (?, ?, ?, ?, ?, ?)"
     users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton')]
+    vehicles_sql = "INSERT INTO vehicles(vin,make,model,year,color) VALUES (?, ?, ?, ?, ?)"
+    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red')]
+    vehicles_values2 = [('U300', 'Mercedes', 'SL 230', 1964, 'black')]
+    registration_sql = "INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    registration_values = [('300', '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen')]
+    registration_values2 = [('400', '2025-02-21', '2026-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen')]
 
     c.executemany(persons_sql,persons_values)
     c.executemany(users_sql,users_values)
+    c.executemany(vehicles_sql, vehicles_values)
+    c.executemany(vehicles_sql, vehicles_values2)
+    c.executemany(registration_sql, registration_values)
+    c.executemany(registration_sql, registration_values2)
     conn.commit()
     return
 

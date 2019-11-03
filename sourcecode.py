@@ -139,6 +139,7 @@ def one(user):
     
     # fname, lname, gender, birth date, birth place, first name of parents, registration date, registration place,unique registration number
     # THIS IS FOR BIRTHS
+    # use datetime function for registration date and use a query to find the regplace
     regdate = datetime.date.today()
     c.execute('SELECT city FROM users where uid = ?;', (user,))
     regplace = c.fetchone()[0]

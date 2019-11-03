@@ -136,15 +136,18 @@ def define_tables():
 def insert_data():
     global conn, c
     persons_sql = "INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)"
-    persons_values = [('Amanda', 'Nguyen', '28-01-1999', 'Edmonton', '16115 - 140 Street', '780 902 9107')]
+    persons_values = [('Amanda', 'Nguyen', '28-01-1999', 'Edmonton', '16115 - 140 Street', '780 902 9107'),('Jim','Halpert','01-01-1950','Scranton','IDK', '123-456-7890'),('pam','halpert','1111-01-01','Scranton','NULL','123-456-7890')]
+
+    
     users_sql = "INSERT INTO users(uid, pwd, utype, fname, lname, city) VALUES (?, ?, ?, ?, ?, ?)"
     users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton')]
+    
     vehicles_sql = "INSERT INTO vehicles(vin,make,model,year,color) VALUES (?, ?, ?, ?, ?)"
-    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red')]
-    vehicles_values2 = [('U300', 'Mercedes', 'SL 230', 1964, 'black')]
+    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red'),('U300', 'Mercedes', 'SL 230', 1964, 'black')]
+    
     registration_sql = "INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    registration_values = [('300', '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen')]
-    registration_values2 = [('400', '2025-02-21', '2026-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen')]
+    registration_values = [(300, '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen'),(400, '2014-02-21', '2015-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen'),(500,'2020-01-01','2021-01-01','WREKT','U300','Jim','Halpert')]
+    
     tickets_sql = "INSERT INTO tickets(tno,regno,fine,violation,vdate) VALUES (?, ?, ?, ?, ?)"
     tickets_values = [('400','300','4','speeding','1964-08-20')]
     tickets_values2 = [('500', '400', '5', 'skidooshing', '2025-09-01')]
@@ -156,9 +159,7 @@ def insert_data():
     c.executemany(persons_sql,persons_values)
     c.executemany(users_sql,users_values)
     c.executemany(vehicles_sql, vehicles_values)
-    c.executemany(vehicles_sql, vehicles_values2)
     c.executemany(registration_sql, registration_values)
-    c.executemany(registration_sql, registration_values2)
     c.executemany(tickets_sql, tickets_values)
     c.executemany(tickets_sql, tickets_values2)
     c.executemany(tickets_sql, tickets_values3)

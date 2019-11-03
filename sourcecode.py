@@ -140,6 +140,9 @@ def missing_parent_info(fname, lname):
         else:
             try:
                 year, month, day = bdate.split('-')
+                # IF I ENTER IN MONTH OR DATE AS A SINGLE DIGIT IT DOESN'T SAVE AS 0X
+                # YEAR CAN BE ENTERED IN AS A SINGLE DIGIT
+                print(year, month, day)
                 datetime.datetime(int(year),int(month),int(day))
                 break
             except ValueError:
@@ -182,9 +185,6 @@ def missing_parent_info(fname, lname):
                   VALUES
                   (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, address, phone_number))
     conn.commit()
-       
-
-    
     
 def two():
     ## git check

@@ -13,7 +13,8 @@ def main():
     c.execute('PRAGMA foreign_keys=ON; ')
     conn.commit()
     login_screen = False
-
+    
+   
     # LOGIN SCREEN
     """
     while login_screen == False:
@@ -32,7 +33,7 @@ def main():
     action = input("Choose a task: ")
     
     if int(action) == 1: one('amanda6')
-    elif int(action) == 2: two()
+    elif int(action) == 2: two('amanda6')
     elif int(action) == 3: three()
     elif int(action) == 4: four()
     elif int(action) == 5: five()
@@ -40,7 +41,7 @@ def main():
     elif int(action) == 7: seven()
     elif int(action) == 8: eight()
     
-        
+
 
 def login():
     print("Login Here!")
@@ -63,28 +64,38 @@ def login():
 # YOU NEED TO CHECK IF THE PERSON ALREADY IS IN THE BIRTH TABLE    
 def one(user):
     print("You have chosen to register a birth")
+    print('Note that first and last names are a maximum of 12 characters')
     
     # Receive information about birth information
     # Most of the validation is checking the length restricted to whatever it is in the database
     # or checking that a name only consists of letters and is not empty
     while True:
         fname = input("Please provide a first name: ")
-        if fname != '' and fname.isalpha() == True and len(fname) <= 12:
+        if fname != '' and len (fname) <= 12 and re.match("^[A-Za-z0-9-]*$", fname):
             break
         else:
             print("Incorrect format")
     
     while True:
         lname = input("Please provide a last name: ")
-        if lname != '' and lname.isalpha() == True and len(lname) <= 12 :
+        if lname != '' and re.match("^[A-Za-z0-9-]*$", lname) and len(lname) <= 12 :
             break 
         else:
             print("Incorrect format")
-            
+    
+    # check to see if this name already exists in the database
+    # if they exist, deny the birth registration
+    if find_person(fname, lname) != None:
+        print('There is already a {} {} that exists in the database'.format(fname,lname))
+        print('Birth registration rejected')
+        return;
+    
     while True:
         gender = input("Please provide the gender (M/F): ")
         if gender.upper() == 'F' or gender.upper() == 'M':
             break
+        else:
+            print('Incorrect format')
     
     # Using datetime module to validate date
     # datetime does not account for months (1-9) having a 0 at the front ex. 01 - January
@@ -102,92 +113,93 @@ def one(user):
             print("Invalid Date")
     
     while True:
-        bplace = input("Please provide a birth place: ")
+        bplace = input("Please provide a birth place (max character length is 20): ")
         if bplace != '' and bplace.isalpha() and len(bplace) <= 20:
-            break      
+            break    
+        else:
+            print('Incorrect format')
+            
        
     while True:
         mot_fname = input("Please provide mother's first name: ")
-        if mot_fname != '' and mot_fname.isalpha() and len(mot_fname) <= 12:
+        if mot_fname != '' and re.match("^[A-Za-z0-9-]*$", mot_fname) and len(mot_fname) <= 12:
             break
         else:
-            print("Invalid entry")
+            print("Incorrect format")
         
     while True:
         mot_lname = input("Please provide mother's last name: ")
-        if mot_lname != '' and mot_lname.isalpha() and len(mot_lname) <= 12:
+        if mot_lname != '' and re.match("^[A-Za-z0-9-]*$", mot_lname) and len(mot_lname) <= 12:
             break
         else:
-            print("Invalid entry")
+            print("Incorrect format")
+    
+    # checking to see if mom already exists in the database
+    mom_name = find_person(mot_fname, mot_lname)       
+    if mom_name == None:
+        mom_name = missing_person_info(mot_fname, mot_lname)    
     
     while True:
         fat_fname = input("Please provide father's first name: ")
-        if fat_fname != '' and fat_fname.isalpha() and len(fat_fname) <= 12:
+        if fat_fname != '' and re.match("^[A-Za-z0-9-]*$", fat_fname) and len(fat_fname) <= 12:
             break 
         else:
-            print("Invalid entry")
+            print("Incorrect format")
         
     while True:
         fat_lname = input("Please provide father's last name: ")
-        if fat_lname != '' and fat_lname.isalpha() and len(fat_lname) <= 12:
+        if fat_lname != '' and re.match("^[A-Za-z0-9-]*$", fat_lname) and len(fat_lname) <= 12:
             break
         else:
-            print("Invalid entry")
+            print("Incorrect format")
     
-    # this is checking if the mom and dad is in the database
-    if find_parent(mot_fname, mot_lname) == None:
-        missing_parent_info(mot_fname, mot_lname)
-    
-    if find_parent(fat_fname, fat_lname) == None:
-        missing_parent_info(fat_fname, fat_lname)
+    # this is checking if the dad is in the database
+    dad_name = find_person(fat_fname, fat_lname)
+    if dad_name == None:
+        dad_name = missing_person_info(fat_fname, fat_lname)
      
-    # REGISTER A PERSON FIRST
-    # We need to grab address and phone number from mom
-    # note that address and phone number is in an indexed list called result
-    c.execute('SELECT address, phone FROM persons where fname LIKE ? and lname LIKE ?;', (mot_fname, mot_lname))
-    result = c.fetchone()
-    c.execute(''' INSERT INTO persons(fname, lname, bdate, bplace, address, phone)
-                  VALUES
-                  (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, result[0], result[1]))
-    conn.commit()
      
     
     # REGISTERING FOR BIRTH
     # use datetime function for registration date and use a query to find the regplace
     regdate = datetime.date.today()
-    c.execute('SELECT city FROM users where uid = ?;', (username,))
+    c.execute('SELECT city FROM users where uid = ?;', (user,))
     regplace = c.fetchone()[0]
     
-    # grabbing a random and unique registration
-    # check that the randomly generated number does not already exist in the database
-    # notice that if we will get an error if we try to subscript a NONE value 
-    # hence, if we try to subscript a NONE value that means that the reg_num does not exist in our database
-    while True:
-        reg_num = random.randint(1,99999999)
-        reg_num = str(reg_num)
-        c.execute('SELECT regno FROM births WHERE regno = ?;', (reg_num,))
-        try:
-            c.fetchone()[0]
-        except TypeError:
-            break
-        
+    # creating unique registration number
+    # we find the current highest registration number and add 1 
+    c.execute('SELECT regno FROM births ORDER BY regno DESC')
+    reg_num = c.fetchone()
+    if reg_num == None:
+        reg_num = 1
+    else:
+        reg_num = reg_num[0] + 1
+    
+    # REGISTER A PERSON FIRST
+    # We need to grab address and phone number from mom
+    # note that address and phone number is in an indexed list called result
+    c.execute('SELECT address, phone FROM persons where fname LIKE ? and lname LIKE ?;', (mom_name[0], mom_name[1]))
+    result = c.fetchone()
+    c.execute(''' INSERT INTO persons(fname, lname, bdate, bplace, address, phone)
+                  VALUES
+                  (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, result[0], result[1]))
+    conn.commit()
+    
+    # THIS IS REGISTERING A BIRTH
     
     c.execute(''' INSERT INTO births(regno, fname, lname, regdate, regplace, gender, f_fname, f_lname, m_fname, m_lname)
                   VALUES (?,?,?,?,?,?,?,?,?,?)''', 
-                (reg_num, fname, lname, regdate, regplace, gender,fat_fname, fat_lname, mot_fname, mot_lname))
+                (reg_num, fname, lname, regdate, regplace, gender, dad_name[0], dad_name[1], mom_name[0], mom_name[1]))
     conn.commit()
     
-        
-        
-
-# This is a short function to check if the first and last name that is passed in exists in the database        
-def find_parent(fname, lname):
+# this function checks if this person exists in the database already
+def find_person(fname, lname):
     c.execute('SELECT fname, lname FROM persons WHERE fname LIKE ? and lname LIKE ?;', (fname, lname))
     return c.fetchone()
 
 # we need first name, last name, birth date, birth place, address and phone. for each parent any column other than first and last can be null
 # we know the user has hit enter if our input is an empty string, if it is set the variable to NULL
-def missing_parent_info(fname, lname):
+def missing_person_info(fname, lname):
     print('\n')
     print("There seems to be no record of {} {} in our database".format(fname,lname))
     print("Please fill out the information down below. \nHit enter if you do not want to fill this out.\n")  
@@ -247,45 +259,53 @@ def missing_parent_info(fname, lname):
                   VALUES
                   (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, address, phone_number))
     conn.commit()
+    
+    return fname, lname
 
     
     
 def two(username):
     print("You have chosen to register a marriage")
     
+    # Receiving information about partner 1
     while True:
         prt1_fname = input("Please provide Partner 1's first name: ")
-        if prt1_fname != '' and len(prt1_fname) <= 12 and prt1_fname.isalpha() == True:
+        if prt1_fname != '' and len(prt1_fname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt1_fname):
             break
         else:
             print("Incorrect format")
     
     while True:
         prt1_lname = input("Please provide Partner 1's last name: ")
-        if prt1_lname != '' and len(prt1_lname) <= 12 and prt1_lname.isalpha() == True:
+        if prt1_lname != '' and len(prt1_lname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt1_lname):
             break 
         else:
             print("Incorrect format")
             
-    if find_partner(prt1_fname, prt1_lname) == None:
-        missing_partner_info(prt1_fname, prt1_lname)
-            
+    # check to see if partner_one exists in the database        
+    partner_one = find_person(prt1_fname, prt1_lname)
+    if partner_one == None:
+        partner_one = missing_person_info(prt1_fname, prt1_lname)
+    
+    # grabbing information about partner 2         
     while True:
         prt2_fname = input("Please provide Partner 2's first name: ")
-        if prt2_fname != '' and len(prt2_fname) <= 12 and prt2_fname.isalpha() == True:
+        if prt2_fname != '' and len(prt2_fname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt2_fname):
             break
         else:
             print("Incorrect format")
     
     while True:
         prt2_lname = input("Please provide Partner 2's last name: ")
-        if prt2_lname != '' and len(prt2_lname) <= 12 and prt2_lname.isalpha() == True:
+        if prt2_lname != '' and len(prt2_lname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt2_lname):
             break 
         else:
             print("Incorrect format")
-        
-    if find_partner(prt2_fname, prt2_lname) == None:
-        missing_partner_info(prt2_fname, prt2_lname)
+            
+    # check to see if partner two exists in the database
+    partner_two = find_person(prt2_fname, prt2_lname)    
+    if partner_two == None:
+        partner_two = missing_person_info(prt2_fname, prt2_lname)
         
     # REGISTERING FOR MARRIAGE
     # use datetime function for registration date and use a query to find the registration place
@@ -294,93 +314,20 @@ def two(username):
     registplace = c.fetchone()[0]
     
     # grabbing a random and unique registration
-    # check that the randomly generated number does not already exist in the database
-    # notice that if we will get an error if we try to subscript a NONE value 
-    # hence, if we try to subscript a NONE value that means that the registnum does not exist in our database
-    while True:
-        registnum = random.randint(1,99999999)
-        registnum = str(registnum)
-        c.execute('SELECT regno FROM marriages WHERE regno = ?;', (registnum,))
-        try:
-            c.fetchone()[0]
-        except TypeError:
-            break
+    c.execute('SELECT regno FROM marriages ORDER BY regno DESC')
+    regno = c.fetchone()
+    if regno == None:
+        regno = 1
+    else:
+        regno = regno[0] + 1
     
     c.execute(''' INSERT INTO marriages(regno, regdate, regplace, p1_fname, p1_lname, p2_fname, p2_lname)
                   VALUES (?,?,?,?,?,?,?)''', 
-                (registnum, registdate, registplace, prt1_fname, prt1_lname, prt2_fname, prt2_lname))
-    conn.commit()
-        
-def find_partner(fname, lname):
-    c.execute('SELECT fname, lname FROM persons WHERE fname =? AND lname=?;', (fname, lname))
-    return c.fetchone()
-    
-
-# we need first name, last name, birth date, birth place, address and phone. for each partner any column other than first and last can be null
-def missing_partner_info(fname, lname):
-    print('\n')
-    print("There seems to be no record of {} {} in our database".format(fname,lname))
-    print("Please fill out the information down below. \nHit enter if you do not want to fill this out.")  
-    
-    # Using datetime module to validate date
-    # datetime does not account for months (1-9) having a 0 at the front ex. 01 - January
-    # if our input passes the datetime function and the length is one, then concatenate a 0 at the front
-    while True:
-        bdate = input("Please provide a birth date (YYYY-MM-DD): ")
-        if bdate == '':
-            bdate =  'NULL'
-            break
-        else:
-            try:
-                year, month, day = bdate.split('-')
-                datetime.datetime(int(year),int(month),int(day))
-                if len(month) == 1:
-                    month = "0" + month
-                bdate = year + '-' + month + '-' + day
-                break
-            except ValueError:
-                print("Invalid Date")
-    
-    while True:
-        bplace = input("Please provide a birth place: ")
-        if bplace == '':
-            bplace = 'NULL'
-            break
-        else:
-            if bplace.isalpha() and len(bplace) <= 20:
-                break      
-            else:
-                print("Invalid input")
-                
-    while True:
-        address = input("Please provide an address: ")
-        if address == '':
-            address = 'NULL'
-            break
-        else:
-            if address.isalpha() and len(address) <= 30:
-                break      
-            else:
-                print("Invalid input")        
-                
-    while True:
-        phone_number = input("Please provide a phone number (123-456-7890): ")
-        if phone_number == '':
-            phone_number = 'NULL'
-            break
-        else:
-            #if validNumber(phone_number) == True:
-            if len(phone_number) <= 12 and re.match("^[0-9]{3}-[0-9]{3}-[0-9]{4}$", phone_number):
-                break      
-            else:
-                print("Invalid input")
-               
-                
-    partner_register = 'INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)'
-    c.execute(partner_register, (fname, lname, bdate, bplace, address, phone_number))
+                (regno, registdate, registplace, partner_one[0], partner_one[1], partner_two[0], partner_two[1]))
     conn.commit()
 
-
+    c.execute('SELECT * FROM marriages')
+    print(c.fetchall())
 
 def three():
  # Provide existing registration number, and renew the registration.
@@ -529,11 +476,6 @@ def four():
     
     c.execute('INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?);', (regno, today, new_expiry, plate, vin, new_person[0], new_person[1]))
     
-
-    
-def find_person(fname, lname):
-    c.execute('SELECT fname, lname FROM persons WHERE fname LIKE ? and lname LIKE ?;', (fname, lname))
-    return c.fetchone()
     
 def five():
     print("You have chosen to process a payment")

@@ -29,7 +29,7 @@ def main():
     print("To find a car owner, type in 8")
     action = input("Choose a task: ")
     
-    if int(action) == 1: one()
+    if int(action) == 1: one(user)
     elif int(action) == 2: two()
     elif int(action) == 3: three()
     elif int(action) == 4: four()

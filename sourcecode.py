@@ -455,16 +455,8 @@ def three():
         # c.execute("SELECT regdate FROM registrations WHERE regno = ?;", (current_regno,))
         # print(c.fetchone()[0])
         
-<<<<<<< HEAD
     conn.commit()
 
-=======
-# process a bill of sale
-# need: vin of a car, name of current owner, name of new owner and plate # for new reg
-# if the name of current owner does not match most recent owner of car in system REJECT TRANSACTION
-# if it can be made, the expiry date of current registration is set to today's date
-# a new registration: new owners name, registration date = today, expiry = a year from now, unique reg number, vin will be copied from current reg to the new on e
->>>>>>> bf95b8824283ee5f962ab693d811835e3a230def
 def four():
     print('\n')
     print('You have chosen to process a bill of sale')

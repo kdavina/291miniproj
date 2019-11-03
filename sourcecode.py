@@ -2,6 +2,8 @@ import sqlite3
 import getpass
 import re
 import datetime
+import random
+
 def main():
     global conn, c 
     # path = sysargv[1] 
@@ -16,8 +18,8 @@ def main():
     """
     while login_screen == False:
         login_screen, username = login()
-    """
-        
+        """
+    
     #USER MENU
     print("To register a birth, type in 1")
     print("To register a marriage, type in 2")
@@ -29,7 +31,7 @@ def main():
     print("To find a car owner, type in 8")
     action = input("Choose a task: ")
     
-    if int(action) == 1: one(user)
+    if int(action) == 1: one('amanda6')
     elif int(action) == 2: two()
     elif int(action) == 3: three()
     elif int(action) == 4: four()
@@ -58,6 +60,7 @@ def login():
         print("Login failed. Try again")
         return False, username
     
+# YOU NEED TO CHECK IF THE PERSON ALREADY IS IN THE BIRTH TABLE    
 def one(user):
     print("You have chosen to register a birth")
     
@@ -159,6 +162,7 @@ def one(user):
             c.fetchone()[0]
         except TypeError:
             break
+        
     
     c.execute(''' INSERT INTO births(regno, fname, lname, regdate, regplace, gender, f_fname, f_lname, m_fname, m_lname)
                   VALUES (?,?,?,?,?,?,?,?,?,?)''', 
@@ -223,10 +227,12 @@ def missing_parent_info(fname, lname):
             phone_number = 'NULL'
             break
         else:
-            if phone_number.isalpha() and len(phone_number) < 12:
+            #if validNumber(phone_number) == True:
+            if len(phone_number) <= 12 and re.match("^[0-9]{3}-[0-9]{3}-[0-9]{4}$", phone_number):
                 break      
             else:
-                print("Invalid input")         
+                print("Invalid input")
+                      
                 
     # at the very end we want to insert this into our database
     c.execute(''' INSERT INTO persons(fname, lname, bdate, bplace, address, phone)
@@ -387,10 +393,114 @@ def three():
         #TESTING
         # c.execute("SELECT regdate FROM registrations WHERE regno = ?;", (current_regno,))
         # print(c.fetchone()[0])
-
+        
+# process a bill of sale
+# need: vin of a car, name of current owner, name of new owner and plate # for new reg
+# if the name of current owner does not match most recent owner of car in system REJECT TRANSACTION
+# if it can be made, the expiry date of current registration is set to today's date
+# a new registration: new owners name, registration date = today, expiry = a year from now, unique reg number, vin will be copied from current reg to the new on e
 def four():
-    ## git check for nan
-    pass
+    print('\n')
+    print('You have chosen to process a bill of sale')
+    
+    # grab and validate information
+    # grabbing vin
+    while True:
+        vin = input('What is the vehicle identification number (vin)? ')
+        if vin != '' and len(vin) <= 5:
+            break
+        else:
+            print('Invalid input')
+            
+    # grabbing current owner
+    while True:
+        current_fname = input('What is the first name of the current owner? ')
+        if current_fname != '' and current_fname.isalpha() and len(current_fname) <= 12:
+            break
+        else:
+            print('Invalid input')
+            
+    while True:
+        current_lname = input('What is the last name of the current owner? ')
+        if current_lname != '' and current_lname.isalpha() and len(current_lname) <= 12:
+            break
+        else:
+            print('Invalid input')      
+            
+    # getting new owner
+    while True:
+        new_fname = input('What is the first name of the new owner? ')
+        if new_fname != '' and new_fname.isalpha() and len(new_fname) <= 12:
+            break
+        else:
+            print('Invalid input')
+            
+    while True:
+        new_lname = input('What is the last name of the new owner? ')
+        if new_lname != '' and new_lname.isalpha() and len(new_lname) <= 12:
+            break
+        else:
+            print('Invalid input')    
+            
+    while True:
+        plate = input('What is the plate number? ')
+        if plate != '' and len(plate) <= 7:
+            break
+        else:
+            print('Invalid input')
+            
+    # check to see if there is a person that exists for both people
+    if find_person(current_fname, current_lname) == None:
+        print('There is no {} {} in the database'.format(current_fname, current_lname))
+        print('New sale rejected.')
+        return;        
+    
+    new_person = find_person(new_fname, new_lname)
+    if new_person == None:
+        print('There is no {} {} in the database'.format(current_fname, current_lname))
+        print('New sale rejected.')
+        return;
+    
+    # checking to see if there is such a registration with the vin and plate
+    # if there is no registration that exists, reject the sale
+    # we are also grabbing the name of the most recent registration of that vin and plate number
+    c.execute('SELECT fname, lname, regno, vin FROM registrations WHERE vin LIKE ? and plate LIKE ? ORDER BY regdate DESC;', (vin, plate))
+    result = c.fetchone()
+    if result == None:
+        print('There is no registration under that vin and plate number')
+        print('New sale rejected.')
+        return;
+    
+    vin = result[3]
+    # we need to check if the recent person registered to the car matches the name given to us
+    if result[0].lower() != current_fname.lower() and result[1].lower() != current_lname.lower():
+        print('That is not the most recent person registered to that vehicle')
+        print('New sale rejected.')
+        return;
+    
+    # change expiry date of old owner's car to today's date
+    # today is a datetime object so do you need to convert it to a string???
+    regno = result[2]
+    today = datetime.date.today()
+    c.execute('UPDATE registrations SET expiry = ? WHERE regno = ?;', (today, regno))
+    
+    # a new registration: new owners name, registration date = today, expiry = a year from now, unique reg number, vin will be copied from current reg to the new on 
+    today_string = today.strftime("%Y-%m-%d")
+    set_db_regyear = datetime.date.today().year + 1
+    year, month, day = today_string.split('-')
+    new_expiry = str(set_db_regyear) + '-' + month + '-' + day    
+    
+    c.execute('SELECT regno FROM registrations ORDER BY regno DESC')
+    regno = c.fetchone()[0] + 1
+    
+    c.execute('INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?);', (regno, today, new_expiry, plate, vin, new_person[0], new_person[1]))
+    
+
+    
+def find_person(fname, lname):
+    c.execute('SELECT fname, lname FROM persons WHERE fname LIKE ? and lname LIKE ?;', (fname, lname))
+    return c.fetchone()
+    
 def five():
     pass
 def six():

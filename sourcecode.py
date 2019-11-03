@@ -303,8 +303,51 @@ def missing_partner_info(fname, lname):
 
 
 def three():
-## git check
-    pass
+ # Provide existing registration number, and renew the registration.
+    # If the current registration has expired or expires today set the new expiry date to one year from today's date
+    # Otherwise, set the new expiry to one year after the current expiry date.
+
+    entry_exists = False
+    while not entry_exists:
+        current_regno = input('Enter an existing registration number. To go back to menu press enter: ')
+        current_regno = current_regno.strip()
+        if current_regno == '':
+            return
+        c.execute('SELECT regdate FROM registrations WHERE regno = ?;', (current_regno,))
+        db_regdate = c.fetchone()
+        if db_regdate == None:
+            print('This registration number is not registered in the database')
+        else:
+            db_regdate = db_regdate[0]
+            db_regdate = datetime.datetime.strptime(db_regdate, "%Y-%m-%d")
+            entry_exists = True
+
+
+    if datetime.datetime.today() >= db_regdate:
+        # Registration has expired or expires today, set new expiry date to one year from today
+        print("Current registration has expired, system is setting new expiry date to one year from today")
+        today = datetime.date.today()
+        today_string = today.strftime("%Y-%m-%d")
+        set_db_regyear = datetime.date.today().year + 1
+        year, month, day = today_string.split('-')
+        new_expiry = str(set_db_regyear) + '-' + month + '-' + day
+        c.execute("UPDATE registrations SET regdate = ? WHERE regno = ?;", (new_expiry, current_regno))
+        # TESTING
+        # c.execute("SELECT regdate FROM registrations WHERE regno = ?;", (current_regno,))
+        # print(c.fetchone()[0])
+    
+    else:
+        print("Setting the new expiry date to a year from current expiry date")
+        c.execute("SELECT expiry FROM registrations WHERE regno = ?;", (current_regno,))
+        old_expiry_str = c.fetchone()[0]
+        exp_year, exp_month, exp_day = old_expiry_str.split('-')
+        exp_year = int(exp_year) + 1
+        new_exp = str(exp_year) + '-' + exp_month + '-' + exp_day
+        c.execute("UPDATE registrations SET regdate = ? WHERE regno = ?;", (new_exp, current_regno))
+        #TESTING
+        # c.execute("SELECT regdate FROM registrations WHERE regno = ?;", (current_regno,))
+        # print(c.fetchone()[0])
+
 def four():
     ## git check for nan
     pass

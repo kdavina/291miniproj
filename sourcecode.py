@@ -2,6 +2,8 @@ import sqlite3
 import getpass
 import re
 import datetime
+import random
+
 def main():
     global conn, c 
     # path = sysargv[1] 
@@ -13,10 +15,9 @@ def main():
     login_screen = False
 
     # LOGIN SCREEN
-    """
+    
     while login_screen == False:
-        login_screen = login()
-    """
+        login_screen, username = login()
         
     #USER MENU
     print("To register a birth, type in 1")
@@ -29,7 +30,7 @@ def main():
     print("To find a car owner, type in 8")
     action = input("Choose a task: ")
     
-    if int(action) == 1: one()
+    if int(action) == 1: one(username)
     elif int(action) == 2: two()
     elif int(action) == 3: three()
     elif int(action) == 4: four()
@@ -50,27 +51,26 @@ def login():
         c.execute('SELECT uid FROM users WHERE uid=? and pwd=?;', (username, password))
         if c.fetchone() != None:
             print("Login Success.")
-            return True
+            return True, username
         else:
             print("Login failed. Try again")
-            return False
+            return False, username
     else:
         print("Login failed. Try again")
-        return False
+        return False, username
     
-def one():
+def one(user):
     print("You have chosen to register a birth")
-    """
     while True:
         fname = input("Please provide a first name: ")
-        if fname != '' and fname.isalpha() == True:
+        if fname != '' and fname.isalpha() == True and len(fname) <= 12:
             break
         else:
             print("Incorrect format")
     
     while True:
         lname = input("Please provide a last name: ")
-        if lname != '' and lname.isalpha() == True:
+        if lname != '' and lname.isalpha() == True and len(lname) <= 12 :
             break 
         else:
             print("Incorrect format")
@@ -85,6 +85,8 @@ def one():
         try:
             year, month, day = bdate.split('-')
             datetime.datetime(int(year),int(month),int(day))
+            if len(month) == 1:
+                month = "0" + month
             break
         except ValueError:
             print("Invalid Date")
@@ -95,7 +97,7 @@ def one():
         bplace = input("Please provide a birth place: ")
         if bplace != '' and bplace.isalpha():
             break      
-    """    
+       
     while True:
         mot_fname = input("Please provide mother's first name: ")
         if mot_fname != '' and mot_fname.isalpha():
@@ -105,24 +107,57 @@ def one():
         mot_lname = input("Please provide mother's last name: ")
         if mot_lname != '' and mot_lname.isalpha():
             break     
-    """   
+    
     while True:
         fat_fname = input("Please provide father's first name: ")
-        if fat_fname != '' and fat_lname.isalpha():
+        if fat_fname != '' and fat_fname.isalpha():
             break     
         
     while True:
         fat_lname = input("Please provide father's last name: ")
         if fat_lname != '' and fat_lname.isalpha():
             break  
-    """
+    
     if find_parent(mot_fname, mot_lname) == None:
         missing_parent_info(mot_fname, mot_lname)
-        
-    elif find_parent(fat_fname, fat_lname) == None:
-        missing_parent_info(fat_fname, fat_lname)
     
-        
+    if find_parent(fat_fname, fat_lname) == None:
+        missing_parent_info(fat_fname, fat_lname)
+     
+    # REGISTER A PERSON FIRST
+    # We need to grab address and phone number from mom
+    # note that address and phone number is in an indexed list called result
+    c.execute('SELECT address, phone FROM persons where fname = ? and lname = ?;', (mot_fname, mot_lname))
+    result = c.fetchone()
+    c.execute(''' INSERT INTO persons(fname, lname, bdate, bplace, address, phone)
+                  VALUES
+                  (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, result[0], result[1]))
+    conn.commit()
+     
+    
+    # register the kid with all this info
+    
+    # fname, lname, gender, birth date, birth place, first name of parents, registration date, registration place,unique registration number
+    # THIS IS FOR BIRTHS
+    regdate = datetime.date.today()
+    c.execute('SELECT city FROM users where uid = ?;', (user,))
+    regplace = c.fetchone()[0]
+    
+    # grabbing a random and unique registration
+    while True:
+        reg_num = random.randint(1,99999999)
+        reg_num = str(reg_num)
+        c.execute('SELECT regno FROM births WHERE regno = ?;', (reg_num,))
+        try:
+            c.fetchone()[0]
+        except TypeError:
+            break
+    
+    c.execute(''' INSERT INTO births(regno, fname, lname, regdate, regplace, gender, f_fname, f_lname, m_fname, m_lname)
+                  VALUES (?,?,?,?,?,?,?,?,?,?)''', 
+                (reg_num, fname, lname, regdate, regplace, gender,fat_fname, fat_lname, mot_fname, mot_lname))
+    conn.commit()
+    
         
 def find_parent(fname, lname):
     c.execute('SELECT fname, lname FROM persons WHERE fname =? and lname=?;', (fname, lname))
@@ -177,7 +212,6 @@ def missing_parent_info(fname, lname):
                 break      
             else:
                 print("Invalid input")         
-    parent_register = 'INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)'
     c.execute(''' INSERT INTO persons(fname, lname, bdate, bplace, address, phone)
                   VALUES
                   (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, address, phone_number))
@@ -187,13 +221,10 @@ def missing_parent_info(fname, lname):
     
     
 def two():
-    ## git check
     pass
 def three():
-## git check
     pass
 def four():
-    ## git check for nan
     pass
 def five():
     pass

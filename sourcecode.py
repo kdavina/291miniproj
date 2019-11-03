@@ -3,6 +3,7 @@ import getpass
 import re
 import datetime
 import random
+import sys
 
 def main():
     global conn, c 
@@ -16,30 +17,58 @@ def main():
     
    
     # LOGIN SCREEN
-    """
     while login_screen == False:
         login_screen, username = login()
-    """
     
-    #USER MENU
-    print("To register a birth, type in 1")
-    print("To register a marriage, type in 2")
-    print("To renew a vehicle registration, type in 3")
-    print("To process a bill of sale, type in 4")
-    print("To process a payment, type in 5")
-    print("To get a driver abstract,type in 6")
-    print("To issue a ticket, type in 7")
-    print("To find a car owner, type in 8")
-    action = input("Choose a task: ")
+    # figuring out if user is an officer or agent
+    c.execute('SELECT utype FROM users WHERE uid LIKE ?;', (username,)) 
+    utype = c.fetchone()[0]
     
-    if int(action) == 1: one('amanda6')
-    elif int(action) == 2: two('amanda6')
-    elif int(action) == 3: three()
-    elif int(action) == 4: four()
-    elif int(action) == 5: five()
-    elif int(action) == 6: six()
-    elif int(action) == 7: seven()
-    elif int(action) == 8: eight()
+    # run the menu until we get a valid action
+    while True:
+        if utype == 'a':
+            while True:
+                action = agent_menu()
+                if action == '':
+                    print('Exiting program')
+                    break
+                else:
+                    try:
+                        action = int(action)
+                        if action < 1 or action > 6:
+                            print('Invalid number')
+                        else:
+                            break
+                    except ValueError:
+                        print('Invalid action')
+        elif utype == 'o':
+            while True:
+                action = officer_menu()
+                if action == '':
+                    print('Exiting program')
+                    break
+                else:
+                    try:
+                        action = int(action)
+                        if action < 1 or action > 8:
+                            print('Invalid action')
+                        else:
+                            break
+                    except ValueError:
+                        print('Invalid action')
+        
+        # run the action               
+        if action == '': break                
+        elif action == 1: one(username)
+        elif action == 2: two(username)
+        elif action == 3: three()
+        elif action == 4: four()
+        elif action == 5: five()
+        elif action == 6: six()
+        elif action == 7: seven()
+        elif action == 8: eight()    
+                     
+
     
 
 
@@ -50,7 +79,7 @@ def login():
     
     # re.match is checking if our username and password contains alphabet, numbers and underscores ONLY
     if re.match("^[A-Za-z0-9_]*$", username) and re.match("^[A-Za-z0-9_]*$", password):
-        c.execute('SELECT uid FROM users WHERE uid=? and pwd=?;', (username, password))
+        c.execute('SELECT uid FROM users WHERE uid LIKE ? and pwd=?;', (username, password))
         if c.fetchone() != None:
             print("Login Success.")
             return True, username
@@ -60,6 +89,57 @@ def login():
     else:
         print("Login failed. Try again")
         return False, username
+    
+def agent_menu():
+    action_space = 30
+    number_space = 15
+    border = '------------------------------------------------'
+    print(border)
+    
+    print("|%s|%s|" % ("Register a birth".center(action_space), '1'.center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Register a marriage".center(action_space), "2".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Renew a vehicle registration".center(action_space), "3".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Process a bill of sale".center(action_space), "4".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Process a payment".center(action_space), "5".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Get a driver abstract".center(action_space), "6".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Exit program".center(action_space), "Press Enter".center(number_space)))
+    print(border)
+    action = input("Choose a task: ")
+    return action
+
+def officer_menu():
+    action_space = 30
+    number_space = 15
+    border = '------------------------------------------------'
+    print(border)
+    
+    print("|%s|%s|" % ("Register a birth".center(action_space), '1'.center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Register a marriage".center(action_space), "2".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Renew a vehicle registration".center(action_space), "3".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Process a bill of sale".center(action_space), "4".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Process a payment".center(action_space), "5".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Get a driver abstract".center(action_space), "6".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Issue a ticket".center(action_space), "7".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Find a car owner".center(action_space), "8".center(number_space)))
+    print(border)
+    print("|%s|%s|" % ("Exit program".center(action_space), "Press Enter".center(number_space)))
+    print(border)    
+    action = input("Choose a task: ")
+    return action    
+    
     
 # YOU NEED TO CHECK IF THE PERSON ALREADY IS IN THE BIRTH TABLE    
 def one(user):
@@ -87,7 +167,7 @@ def one(user):
     # if they exist, deny the birth registration
     if find_person(fname, lname) != None:
         print('There is already a {} {} that exists in the database'.format(fname,lname))
-        print('Birth registration rejected')
+        print('Birth registration rejected.\n')
         return;
     
     while True:
@@ -191,6 +271,7 @@ def one(user):
                   VALUES (?,?,?,?,?,?,?,?,?,?)''', 
                 (reg_num, fname, lname, regdate, regplace, gender, dad_name[0], dad_name[1], mom_name[0], mom_name[1]))
     conn.commit()
+    print("Birth registration successful\n")
     
 # this function checks if this person exists in the database already
 def find_person(fname, lname):
@@ -326,9 +407,8 @@ def two(username):
                 (regno, registdate, registplace, partner_one[0], partner_one[1], partner_two[0], partner_two[1]))
     conn.commit()
 
-    c.execute('SELECT * FROM marriages')
-    print(c.fetchall())
-
+    print("Marriage registration successful\n")
+    
 def three():
  # Provide existing registration number, and renew the registration.
     # If the current registration has expired or expires today set the new expiry date to one year from today's date
@@ -430,13 +510,13 @@ def four():
     # check to see if there is a person that exists for both people
     if find_person(current_fname, current_lname) == None:
         print('There is no {} {} in the database'.format(current_fname, current_lname))
-        print('New sale rejected.')
+        print('New sale rejected.\n')
         return;        
     
     new_person = find_person(new_fname, new_lname)
     if new_person == None:
         print('There is no {} {} in the database'.format(current_fname, current_lname))
-        print('New sale rejected.')
+        print('New sale rejected.\n')
         return;
     
     # checking to see if there is such a registration with the vin and plate
@@ -446,14 +526,14 @@ def four():
     result = c.fetchone()
     if result == None:
         print('There is no registration under that vin and plate number')
-        print('New sale rejected.')
+        print('New sale rejected.\n')
         return;
     
     vin = result[3]
     # we need to check if the recent person registered to the car matches the name given to us
     if result[0].lower() != current_fname.lower() and result[1].lower() != current_lname.lower():
         print('That is not the most recent person registered to that vehicle')
-        print('New sale rejected.')
+        print('New sale rejected.\n')
         return;
     
     # change expiry date of old owner's car to today's date
@@ -472,7 +552,7 @@ def four():
     regno = c.fetchone()[0] + 1
     
     c.execute('INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?);', (regno, today, new_expiry, plate, vin, new_person[0], new_person[1]))
-    
+    print("Bill of Sale successful.\n")
     
 def five():
     print("You have chosen to process a payment")
@@ -679,7 +759,7 @@ def seven():
     
     c.execute('INSERT INTO tickets(tno,regno,fine,violation,vdate) VALUES (?, ?, ?, ?, ?)', (tno, regno, fine, violation, vdate))
     conn.commit()
-    
+    print("Issue a ticket successful\n")
     
           
 def eight():

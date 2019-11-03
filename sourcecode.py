@@ -15,7 +15,7 @@ def main():
     # LOGIN SCREEN
     """
     while login_screen == False:
-        login_screen = login()
+        login_screen, username = login()
     """
         
     #USER MENU
@@ -50,96 +50,135 @@ def login():
         c.execute('SELECT uid FROM users WHERE uid=? and pwd=?;', (username, password))
         if c.fetchone() != None:
             print("Login Success.")
-            return True
+            return True, username
         else:
             print("Login failed. Try again")
-            return False
+            return False, username
     else:
         print("Login failed. Try again")
-        return False
+        return False, username
     
-def one():
+def one(user):
     print("You have chosen to register a birth")
     
+    # Receive information about birth information
+    # Most of the validation is checking the length restricted to whatever it is in the database
+    # or checking that a name only consists of letters and is not empty
     while True:
-        #check to see if fname length < 12
         fname = input("Please provide a first name: ")
-        if fname != '' and fname.isalpha() == True:
+        if fname != '' and fname.isalpha() == True and len(fname) <= 12:
             break
         else:
             print("Incorrect format")
     
     while True:
-        #check to see if fname length < 12
         lname = input("Please provide a last name: ")
-        if lname != '' and lname.isalpha() == True:
+        if lname != '' and lname.isalpha() == True and len(lname) <= 12 :
             break 
         else:
             print("Incorrect format")
             
     while True:
-        #if F/M not entered, maybe show line saying invalid entry?
         gender = input("Please provide the gender (M/F): ")
         if gender.upper() == 'F' or gender.upper() == 'M':
             break
-      
+    
+    # Using datetime module to validate date
+    # datetime does not account for months (1-9) having a 0 at the front ex. 01 - January
+    # if our input passes the datetime function and the length is one, then concatenate a 0 at the front
     while True:
         bdate = input("Please provide a birth date (YYYY-MM-DD): ")
         try:
             year, month, day = bdate.split('-')
             datetime.datetime(int(year),int(month),int(day))
+            if len(month) == 1:
+                month = "0" + month
+            bdate = year +'-' + month +'-'+ day
             break
         except ValueError:
             print("Invalid Date")
     
-    
-    
     while True:
-        #check to see if bplace length < 20
         bplace = input("Please provide a birth place: ")
-        if bplace != '' and bplace.isalpha():
+        if bplace != '' and bplace.isalpha() and len(bplace) <= 20:
             break      
-        
+       
     while True:
-        #check to see if mother's fname length < 12
         mot_fname = input("Please provide mother's first name: ")
-        if mot_fname != '' and mot_fname.isalpha():
+        if mot_fname != '' and mot_fname.isalpha() and len(mot_fname) <= 12:
             break  
         
     while True:
-        #check to see if mother's lname length < 12
         mot_lname = input("Please provide mother's last name: ")
-        if mot_lname != '' and mot_lname.isalpha():
+        if mot_lname != '' and mot_lname.isalpha() and len(mot_lname) <= 12:
             break     
-      
+    
     while True:
-        #check to see if father's fname length < 12
         fat_fname = input("Please provide father's first name: ")
-        if fat_fname != '' and fat_lname.isalpha():
+        if fat_fname != '' and fat_fname.isalpha() and len(fat_fname) <= 12:
             break     
         
     while True:
-        #check to see if father's lname length < 12
         fat_lname = input("Please provide father's last name: ")
-        if fat_lname != '' and fat_lname.isalpha():
+        if fat_lname != '' and fat_lname.isalpha() and len(fat_lname) <= 12:
             break  
     
+    # this is checking if the mom and dad is in the database
     if find_parent(mot_fname, mot_lname) == None:
         missing_parent_info(mot_fname, mot_lname)
-        
-    elif find_parent(fat_fname, fat_lname) == None:
+    
+    if find_parent(fat_fname, fat_lname) == None:
         missing_parent_info(fat_fname, fat_lname)
+     
+    # REGISTER A PERSON FIRST
+    # We need to grab address and phone number from mom
+    # note that address and phone number is in an indexed list called result
+    c.execute('SELECT address, phone FROM persons where fname LIKE ? and lname LIKE ?;', (mot_fname, mot_lname))
+    result = c.fetchone()
+    c.execute(''' INSERT INTO persons(fname, lname, bdate, bplace, address, phone)
+                  VALUES
+                  (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, result[0], result[1]))
+    conn.commit()
+     
+    
+    # REGISTERING FOR BIRTH
+    # use datetime function for registration date and use a query to find the regplace
+    regdate = datetime.date.today()
+    c.execute('SELECT city FROM users where uid = ?;', (user,))
+    regplace = c.fetchone()[0]
+    
+    # grabbing a random and unique registration
+    # check that the randomly generated number does not already exist in the database
+    # notice that if we will get an error if we try to subscript a NONE value 
+    # hence, if we try to subscript a NONE value that means that the reg_num does not exist in our database
+    while True:
+        reg_num = random.randint(1,99999999)
+        reg_num = str(reg_num)
+        c.execute('SELECT regno FROM births WHERE regno = ?;', (reg_num,))
+        try:
+            c.fetchone()[0]
+        except TypeError:
+            break
+    
+    c.execute(''' INSERT INTO births(regno, fname, lname, regdate, regplace, gender, f_fname, f_lname, m_fname, m_lname)
+                  VALUES (?,?,?,?,?,?,?,?,?,?)''', 
+                (reg_num, fname, lname, regdate, regplace, gender,fat_fname, fat_lname, mot_fname, mot_lname))
+    conn.commit()
     
         
         
+
+# This is a short function to check if the first and last name that is passed in exists in the database        
 def find_parent(fname, lname):
-    c.execute('SELECT fname, lname FROM persons WHERE fname =? and lname=?;', (fname, lname))
+    c.execute('SELECT fname, lname FROM persons WHERE fname LIKE ? and lname LIKE ?;', (fname, lname))
     return c.fetchone()
 
 # we need first name, last name, birth date, birth place, address and phone. for each parent any column other than first and last can be null
+# we know the user has hit enter if our input is an empty string, if it is set the variable to NULL
 def missing_parent_info(fname, lname):
+    print('\n')
     print("There seems to be no record of {} {} in our database".format(fname,lname))
-    print("Please fill out the information down below. \nHit enter if you do not want to fill this out.")  
+    print("Please fill out the information down below. \nHit enter if you do not want to fill this out.\n")  
     while True:
         bdate = input("Please provide a birth date (YYYY-MM-DD): ")
         if bdate == '':
@@ -149,6 +188,9 @@ def missing_parent_info(fname, lname):
             try:
                 year, month, day = bdate.split('-')
                 datetime.datetime(int(year),int(month),int(day))
+                if len(month) == 1:
+                    month = "0" + month   
+                bdate = year +'-' + month +'-'+ day                    
                 break
             except ValueError:
                 print("Invalid Date")
@@ -159,7 +201,6 @@ def missing_parent_info(fname, lname):
             bplace = 'NULL'
             break
         else:
-        #check for length of bplace < 20?
             if bplace.isalpha():
                 break      
             else:
@@ -182,17 +223,16 @@ def missing_parent_info(fname, lname):
             phone_number = 'NULL'
             break
         else:
-        #check if length is less than or equal to 12
             if phone_number.isalpha() and len(phone_number) < 12:
                 break      
             else:
                 print("Invalid input")         
-    parent_register = 'INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)'
+                
+    # at the very end we want to insert this into our database
     c.execute(''' INSERT INTO persons(fname, lname, bdate, bplace, address, phone)
                   VALUES
                   (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, address, phone_number))
     conn.commit()
-       
 
     
     

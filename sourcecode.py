@@ -455,11 +455,16 @@ def three():
         # c.execute("SELECT regdate FROM registrations WHERE regno = ?;", (current_regno,))
         # print(c.fetchone()[0])
         
+<<<<<<< HEAD
+    conn.commit()
+
+=======
 # process a bill of sale
 # need: vin of a car, name of current owner, name of new owner and plate # for new reg
 # if the name of current owner does not match most recent owner of car in system REJECT TRANSACTION
 # if it can be made, the expiry date of current registration is set to today's date
 # a new registration: new owners name, registration date = today, expiry = a year from now, unique reg number, vin will be copied from current reg to the new on e
+>>>>>>> bf95b8824283ee5f962ab693d811835e3a230def
 def four():
     print('\n')
     print('You have chosen to process a bill of sale')
@@ -644,8 +649,39 @@ def six():
     # Given the option to see the tickets ordered from the latest to the oldest. 
     # For each ticket, you will report the ticket number, the violation date, the violation description, the fine, the registration number and the make and model of the car for which the ticket is issued. 
     # If there are more than 5 tickets, at most 5 tickets will be shown at a time, and the user can select to see more.
-    f_name = input("Enter first name: ")
-    l_name = input("Enter last name: ")
+    
+    # Validate user exists in database
+    entry_exists = False
+    while not entry_exists:
+        f_name = input("Enter first name. Press enter to exit. ").strip()
+        if f_name == '':
+            return
+        l_name = input("Enter last name. Press enter to exit. ").strip()
+        if l_name == '':
+            return
+
+        c.execute("SELECT fname FROM persons WHERE fname LIKE ? AND lname LIKE ?; ", (f_name, l_name))
+        if c.fetchone() != None:
+            entry_exists = True
+        
+    print("Driver abstract:")
+
+    # Get number of tickets
+    c.execute('''SELECT count(t.tno)
+                FROM tickets t, registrations r
+                WHERE t.regno = r.regno
+                AND r.fname LIKE ? AND r.lname LIKE ?;''', (f_name, l_name))
+    print(c.fetchone()[0])
+
+    # Get number of demerit notices
+    c.execute('''SELECT count()
+                FROM tickets t, registrations r
+                WHERE t.regno = r.regno
+                AND r.fname LIKE ? AND r.lname LIKE ?;''', (f_name, l_name))
+
+
+
+
     
     
 # ISSUE A TICKET

@@ -152,6 +152,14 @@ def insert_data():
     tickets_values4 = [('700', '400', '2', 'cancelled', '2029-12-12')]
     tickets_values5 = [('800', '300', '1', 'flaking', '2030-01-01')]
     tickets_values6 = [('900', '300', '6', 'imtired', '2031-08-07')]
+    demerits_sql = "INSERT INTO demeritNotices(ddate, fname, lname, points, desc) VALUES (?, ?, ?, ?, ?)"
+    demerits_values = [('2018-07-20', 'Amanda', 'Nguyen', 4, 'Speeding')]
+    demerits_values2 = [('2019-03-20', 'Amanda', 'Nguyen', 12, 'Driving armor vehicles')]
+    demerits_values3 = [('2000-03-30', 'Amanda', 'Nguyen', 4, 'Speeding')]
+    demerits_values4 = [('2001-03-29', 'Amanda', 'Nguyen', 2, 'Red light')]
+    demerits_values5 = [('2016-02-20', 'Amanda', 'Nguyen', 2, 'Speeding')]
+    demerits_values5 = [('2010-10-31', 'Amanda', 'Nguyen', 8, 'Drunk driving')]
+    demerits_values6 = [('2019-09-28', 'Amanda', 'Nguyen', 12, 'Unlicenced driving')]
 
     c.executemany(persons_sql,persons_values)
     c.executemany(users_sql,users_values)
@@ -165,6 +173,12 @@ def insert_data():
     c.executemany(tickets_sql, tickets_values4)
     c.executemany(tickets_sql, tickets_values5)
     c.executemany(tickets_sql, tickets_values6)
+    c.executemany(demerits_sql, demerits_values)
+    c.executemany(demerits_sql, demerits_values2)
+    c.executemany(demerits_sql, demerits_values3)
+    c.executemany(demerits_sql, demerits_values4)
+    c.executemany(demerits_sql, demerits_values5)
+    c.executemany(demerits_sql, demerits_values6)
 
     conn.commit()
     return

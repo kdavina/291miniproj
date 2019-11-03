@@ -136,16 +136,20 @@ def define_tables():
 def insert_data():
     global conn, c
     persons_sql = "INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)"
-    persons_values = [('Amanda', 'Nguyen', '28-01-1999', 'Edmonton', '16115 - 140 Street', '780 902 9107')]
+    persons_values = [('Amanda', 'Nguyen', '28-01-1999', 'Edmonton', '16115 - 140 Street', '780 902 9107'),('Jim','Halpert','01-01-1950','Scranton','IDK', '123-456-7890'),('pam','halpert','1111-01-01','Scranton','NULL','123-456-7890')]
+
+    
     users_sql = "INSERT INTO users(uid, pwd, utype, fname, lname, city) VALUES (?, ?, ?, ?, ?, ?)"
     users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton')]
+    
     vehicles_sql = "INSERT INTO vehicles(vin,make,model,year,color) VALUES (?, ?, ?, ?, ?)"
-    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red')]
-    vehicles_values2 = [('U300', 'Mercedes', 'SL 230', 1964, 'black')]
+    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red'),('U300', 'Mercedes', 'SL 230', 1964, 'black')]
+    
     registration_sql = "INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    registration_values = [('300', '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen')]
-    registration_values2 = [('400', '2025-02-21', '2026-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen')]
+    registration_values = [(300, '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen'),(400, '2014-02-21', '2015-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen'),(500,'2020-01-01','2021-01-01','WREKT','U300','Jim','Halpert')]
+    
     tickets_sql = "INSERT INTO tickets(tno,regno,fine,violation,vdate) VALUES (?, ?, ?, ?, ?)"
+<<<<<<< HEAD
     tickets_values = [('400','300','4','speeding','1964-08-20')]
     tickets_values2 = [('500', '400', '5', 'skidooshing', '2025-09-01')]
     tickets_values3 = [('600', '400', '2', 'crying', '2025-10-10')]
@@ -160,14 +164,16 @@ def insert_data():
     demerits_values5 = [('2016-02-20', 'Amanda', 'Nguyen', 2, 'Speeding')]
     demerits_values5 = [('2010-10-31', 'Amanda', 'Nguyen', 8, 'Drunk driving')]
     demerits_values6 = [('2019-09-28', 'Amanda', 'Nguyen', 12, 'Unlicenced driving')]
+=======
+    tickets_values = [('400','300','4','speeding','1964-08-20'), ('500', '400', '5', 'skidooshing', '2025-09-01'), ('600', '400', '2', 'crying', '2025-10-10'), ('700', '400', '2', 'cancelled', '2029-12-12'), ('800', '300', '1', 'flaking', '2030-01-01'), ('900', '300', '6', 'imtired', '2031-08-07')]
+>>>>>>> bf95b8824283ee5f962ab693d811835e3a230def
 
     c.executemany(persons_sql,persons_values)
     c.executemany(users_sql,users_values)
     c.executemany(vehicles_sql, vehicles_values)
-    c.executemany(vehicles_sql, vehicles_values2)
     c.executemany(registration_sql, registration_values)
-    c.executemany(registration_sql, registration_values2)
     c.executemany(tickets_sql, tickets_values)
+<<<<<<< HEAD
     c.executemany(tickets_sql, tickets_values2)
     c.executemany(tickets_sql, tickets_values3)
     c.executemany(tickets_sql, tickets_values4)
@@ -179,6 +185,8 @@ def insert_data():
     c.executemany(demerits_sql, demerits_values4)
     c.executemany(demerits_sql, demerits_values5)
     c.executemany(demerits_sql, demerits_values6)
+=======
+>>>>>>> bf95b8824283ee5f962ab693d811835e3a230def
 
     conn.commit()
     return

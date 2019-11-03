@@ -359,8 +359,15 @@ def six():
     # Given the option to see the tickets ordered from the latest to the oldest. 
     # For each ticket, you will report the ticket number, the violation date, the violation description, the fine, the registration number and the make and model of the car for which the ticket is issued. 
     # If there are more than 5 tickets, at most 5 tickets will be shown at a time, and the user can select to see more.
-    f_name = input("Enter first name: ")
+    f_name = input("Enter first name: ").lower()
     l_name = input("Enter last name: ")
+    c.execute('''SELECT count(t.tno)
+                FROM tickets t, registrations r
+                WHERE t.regno = r.regno
+                AND r.fname = ? AND r.lname = ?;''', (f_name, l_name))
+    print(c.fetchone()[0])
+
+
     
     
 def seven():

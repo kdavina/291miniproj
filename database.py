@@ -145,6 +145,13 @@ def insert_data():
     registration_sql = "INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?, ?, ?, ?, ?, ?, ?)"
     registration_values = [('300', '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen')]
     registration_values2 = [('400', '2025-02-21', '2026-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen')]
+    tickets_sql = "INSERT INTO tickets(tno,regno,fine,violation,vdate) VALUES (?, ?, ?, ?, ?)"
+    tickets_values = [('400','300','4','speeding','1964-08-20')]
+    tickets_values2 = [('500', '400', '5', 'skidooshing', '2025-09-01')]
+    tickets_values3 = [('600', '400', '2', 'crying', '2025-10-10')]
+    tickets_values4 = [('700', '400', '2', 'cancelled', '2029-12-12')]
+    tickets_values5 = [('800', '300', '1', 'flaking', '2030-01-01')]
+    tickets_values6 = [('900', '300', '6', 'imtired', '2031-08-07')]
 
     c.executemany(persons_sql,persons_values)
     c.executemany(users_sql,users_values)
@@ -152,6 +159,13 @@ def insert_data():
     c.executemany(vehicles_sql, vehicles_values2)
     c.executemany(registration_sql, registration_values)
     c.executemany(registration_sql, registration_values2)
+    c.executemany(tickets_sql, tickets_values)
+    c.executemany(tickets_sql, tickets_values2)
+    c.executemany(tickets_sql, tickets_values3)
+    c.executemany(tickets_sql, tickets_values4)
+    c.executemany(tickets_sql, tickets_values5)
+    c.executemany(tickets_sql, tickets_values6)
+
     conn.commit()
     return
 

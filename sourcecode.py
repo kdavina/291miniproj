@@ -356,7 +356,15 @@ def four():
 def five():
     pass
 def six():
-    pass
+    # Enter a first name and a last name to get a driver abstract
+    # Driver abstract contains number of tickets, number of demerit notices, total number of demerit points received both within the past 2 years and within the lifetime. 
+    # Given the option to see the tickets ordered from the latest to the oldest. 
+    # For each ticket, you will report the ticket number, the violation date, the violation description, the fine, the registration number and the make and model of the car for which the ticket is issued. 
+    # If there are more than 5 tickets, at most 5 tickets will be shown at a time, and the user can select to see more.
+    f_name = input("Enter first name: ")
+    l_name = input("Enter last name: ")
+    
+    
 def seven():
     pass
 def eight():

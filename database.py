@@ -23,15 +23,14 @@ def drop_tables():
         drop table if exists vehicles;
         drop table if exists marriages;
         drop table if exists births;
-        drop table if exists persons;
         drop table if exists payments;
         drop table if exists users;
+        drop table if exists persons;
     ''')
     conn.commit()
 
 
 def define_tables():
-    
     c.executescript('''
         create table persons (
           fname		char(12),
@@ -116,15 +115,17 @@ def define_tables():
           foreign key (tno) references tickets
         );
         create table users (
-          uid		char(8),
-          pwd		char(8),
-          utype		char(1),	
-          fname		char(12),
-          lname		char(12), 
-          city		char(15),
-          primary key(uid),
-          foreign key (fname,lname) references persons
-        );
+            uid		char(8),
+            pwd		char(8),
+            utype	char(1),	
+            fname	char(12),
+            lname	char(12), 
+            city	char(15),
+            primary key(uid),
+            foreign key (fname,lname) references persons
+          );
+  
+       
         ''')
 
     conn.commit()
@@ -137,7 +138,7 @@ def insert_data():
     persons_sql = "INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)"
     persons_values = [('Amanda', 'Nguyen', '28-01-1999', 'Edmonton', '16115 - 140 Street', '780 902 9107')]
     users_sql = "INSERT INTO users(uid, pwd, utype, fname, lname, city) VALUES (?, ?, ?, ?, ?, ?)"
-    users_values = [('amanda6', 'password', '1', 'Amanda', 'Nguyen', 'Edmonton')]
+    users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton')]
 
     c.executemany(persons_sql,persons_values)
     c.executemany(users_sql,users_values)
@@ -153,8 +154,6 @@ def main():
     drop_tables()
     define_tables()
     insert_data()
-
-
     conn.commit()
     conn.close()
     return

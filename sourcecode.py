@@ -15,10 +15,10 @@ def main():
     login_screen = False
 
     # LOGIN SCREEN
-    
+    """
     while login_screen == False:
         login_screen, username = login()
-    
+    """
     
     #USER MENU
     print("To register a birth, type in 1")
@@ -634,10 +634,71 @@ def six():
 # violation date is set to today's date if not provided
 def seven():
     print("You have chosen to issue a ticket:")
+    
+    # receive a registration number from the officer 
+    # first we check that it is not empty and that the input is all digits
+    # convert our variable into an int type then check to see if there is a registration number in the database
     while True:
-        regnum = input("Please provide a valid registration number")
-        if regnum != '' and regnum.isdigit():
+        regno = input("Please provide a valid registration number: ")
+        if regno != '' and regno.isdigit():
+            regno = int(regno)
+            c.execute('SELECT regno FROM registrations WHERE regno = ?;', (regno,))
+            regno = c.fetchone()
+            if regno == None:
+                print('That registration number does not exist in the database')
+            else:
+                regno = regno[0]
+                break
+        else:
+            print("Invalid input format")
+            
+    c.execute('SELECT r.fname, r.lname, v.make, v.model, v.year, v.color FROM registrations r, vehicles v WHERE r.vin = v.vin')
+    result = c.fetchone()
+    print('Persons Name: {} {}\nMake: {}\nModel: {}\nYear: {}\nColor: {}\n'.format(result[0],result[1],result[2], result[3],result[4],result[5]))
+    
+    # Grabbing information for the ticket 
+    print("Please fill out the following information down below.\n")
+    while True:
+        vdate = input("Please provide a violation date (YYYY-MM-DD). Hit enter if not applicable: ")
+        if vdate == '':
+            vdate =  datetime.date.today()
             break
+        else:
+            try:
+                year, month, day = vdate.split('-')
+                datetime.datetime(int(year),int(month),int(day))
+                if len(month) == 1:
+                    month = "0" + month   
+                vdate = year +'-' + month +'-'+ day                    
+                break
+            except ValueError:
+                print("Invalid Date")
+                
+    while True:
+        violation = input('Please provide the violation description: ')
+        if violation != '':
+            break
+        else:
+            print('Invalid input')
+    
+    while True:
+        fine = input('Please provide a fine amount (minimum: $1): ')
+        fine = int(fine)
+        if fine > 1:
+            break
+        else:
+            print('Invalid input')
+            
+    # creating a tno
+    # find the current highest ticket number and increase it by 1
+    c.execute('SELECT tno FROM tickets ORDER BY tno DESC')
+    tno = c.fetchone()[0] + 1
+    
+    c.execute('INSERT INTO tickets(tno,regno,fine,violation,vdate) VALUES (?, ?, ?, ?, ?)', (tno, regno, fine, violation, vdate))
+    conn.commit()
+    
+    
+          
 def eight():
     pass
 

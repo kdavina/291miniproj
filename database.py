@@ -136,11 +136,11 @@ def define_tables():
 def insert_data():
     global conn, c
     persons_sql = "INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)"
-    persons_values = [('Amanda', 'Nguyen', '28-01-1999', 'Edmonton', '16115 - 140 Street', '780 902 9107'),('Jim','Halpert','01-01-1950','Scranton','IDK', '123-456-7890'),('pam','halpert','1111-01-01','Scranton','NULL','123-456-7890')]
+    persons_values = [('Amanda', 'Nguyen', '1999-01-28', 'Edmonton', '16115 - 140 Street', '780 902 9107'),('Jim','Halpert','1950-01-01','Scranton','IDK', '123-456-7890'),('pam','halpert','1111-01-01','Scranton','NULL','123-456-7890'), ('Officer','Poopy','2010-05-04','Calgary','Happy Lane','123-456-7889')]
 
     
     users_sql = "INSERT INTO users(uid, pwd, utype, fname, lname, city) VALUES (?, ?, ?, ?, ?, ?)"
-    users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton')]
+    users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton'), ('officeruid', 'poopy', 'o', 'Officer', 'Poopy', 'Calgary')]
     
     vehicles_sql = "INSERT INTO vehicles(vin,make,model,year,color) VALUES (?, ?, ?, ?, ?)"
     vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red'),('U300', 'Mercedes', 'SL 230', 1964, 'black')]

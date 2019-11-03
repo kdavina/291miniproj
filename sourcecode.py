@@ -375,16 +375,8 @@ def three():
         # c.execute("SELECT regdate FROM registrations WHERE regno = ?;", (current_regno,))
         # print(c.fetchone()[0])
         
-<<<<<<< HEAD
     conn.commit()
 
-=======
-# process a bill of sale
-# need: vin of a car, name of current owner, name of new owner and plate # for new reg
-# if the name of current owner does not match most recent owner of car in system REJECT TRANSACTION
-# if it can be made, the expiry date of current registration is set to today's date
-# a new registration: new owners name, registration date = today, expiry = a year from now, unique reg number, vin will be copied from current reg to the new on e
->>>>>>> bf95b8824283ee5f962ab693d811835e3a230def
 def four():
     print('\n')
     print('You have chosen to process a bill of sale')
@@ -580,9 +572,11 @@ def six():
         if l_name == '':
             return
 
-        c.execute("SELECT fname FROM persons WHERE fname LIKE ? AND lname LIKE ?; ", (f_name, l_name))
-        if c.fetchone() != None:
+        person = find_person(f_name, l_name)
+        if person != None:
             entry_exists = True
+            f_name = person[0]
+            l_name = person[1]
         
     print("Driver abstract:")
 
@@ -591,13 +585,24 @@ def six():
                 FROM tickets t, registrations r
                 WHERE t.regno = r.regno
                 AND r.fname LIKE ? AND r.lname LIKE ?;''', (f_name, l_name))
-    print(c.fetchone()[0])
+    print("Number of tickets:", c.fetchone()[0])
 
     # Get number of demerit notices
-    c.execute('''SELECT count()
-                FROM tickets t, registrations r
-                WHERE t.regno = r.regno
-                AND r.fname LIKE ? AND r.lname LIKE ?;''', (f_name, l_name))
+    c.execute('''SELECT count(ddate)
+                FROM demeritNotices
+                WHERE fname LIKE ? AND lname LIKE ?;''', (f_name, l_name))
+    print("Number of demerit notices:", c.fetchone()[0])
+
+    # Get number of demerit points within the last 2 years
+    two_years_ago = datetime.date.today()
+    two_years_ago = two_years_ago.replace(year = two_years_ago.year - 2)
+
+    c.execute('''SELECT sum(points)
+                FROM demeritNotices
+                WHERE ddate > ? 
+                AND fname LIKE ? AND lname LIKE ?;''', (f_name, l_name, two_years_ago))
+    print("Number of demerit points within the last 2 years:", c.fetchone()[0])
+    
 
 
 

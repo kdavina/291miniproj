@@ -7,9 +7,8 @@ import sys
 
 def main():
     global conn, c 
-    # path = sys.argv[1] 
-    # conn = sqlite3.connect(path)
-    conn = sqlite3.connect('./database_test.db')
+    path = sys.argv[1] 
+    conn = sqlite3.connect(path)
     c = conn.cursor()
     c.execute('PRAGMA foreign_keys=ON; ')
     conn.commit()
@@ -658,7 +657,7 @@ def five():
         if find_fine(ticket_no) == False:
             return
     else:
-        print("Invalid entry")
+        print("This ticket number does not exist in the database.")
         
 
 # Check to see if ticket exists in the tickets table in the database       
@@ -866,6 +865,7 @@ def seven():
             regno = c.fetchone()
             if regno == None:
                 print('That registration number does not exist in the database')
+                return
             else:
                 regno = regno[0]
                 break

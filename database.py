@@ -136,7 +136,13 @@ def define_tables():
 def insert_data():
     global conn, c
     persons_sql = "INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)"
+<<<<<<< HEAD
+    persons_values = [('AmANda', 'NguYEn', '1999-01-28', 'EdmOntOn', '16115 - 140 Street', '780 902 9107'),('Jim','Halpert','1950-01-01','Scranton','IDK', '123-456-7890'),('pam','halpert','1111-01-01','Scranton','NULL','123-456-7890'), ('Officer','Poopy','2010-05-04','Calgary','Happy Lane','123-456-7889')]
+
+    
+=======
     persons_values = [('Amanda', 'Nguyen', '1999-01-28', 'Edmonton', '16115 - 140 Street', '780 902 9107'),('Jim','Halpert','1950-01-01','Scranton','IDK', '123-456-7890'),('pam','halpert','1111-01-01','Scranton','NULL','123-456-7890'), ('Officer','Poopy','2010-05-04','Calgary','Happy Lane','123-456-7889'), ('miley', 'cyrus', 'NULL', 'NULL', 'NULL','NULL')]
+>>>>>>> 7398f6772c1c3c5486dd02a3a53f6a1bb22c1a97
     users_sql = "INSERT INTO users(uid, pwd, utype, fname, lname, city) VALUES (?, ?, ?, ?, ?, ?)"
     users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton'), ('officeruid', 'poopy', 'o', 'Officer', 'Poopy', 'Calgary')]
     

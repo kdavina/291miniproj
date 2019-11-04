@@ -7,8 +7,8 @@ import sys
 
 def main():
     global conn, c 
-    # path = sys.argv[1] 
-    # conn = sqlite3.connect(path)
+    #path = sys.argv[1] 
+    #conn = sqlite3.connect(path)
     conn = sqlite3.connect('./database_test.db')
     c = conn.cursor()
     c.execute('PRAGMA foreign_keys=ON; ')
@@ -28,7 +28,7 @@ def main():
             
             # depending on utype, run the menu until we get a valid action
             while True:
-                c.execute('SELECT * FROM persons')
+                c.execute('SELECT * FROM vehicles')
                 print(c.fetchall())
                 print('\n')
                 c.execute('SELECT * FROM registrations')
@@ -502,7 +502,8 @@ def three():
         c.execute('SELECT expiry FROM registrations WHERE regno = ?;', (current_regno,))
         db_expiry = c.fetchone()
         if db_expiry == None:
-            print('This registration number is not registered in the database')
+            print('This registration number is not registered in the database. Returning to main mneu')
+            return
         else:
             db_expiry = db_expiry[0]
             db_expiry = datetime.datetime.strptime(db_expiry, "%Y-%m-%d")
@@ -736,7 +737,10 @@ def six():
             return
 
         person = find_person(f_name, l_name)
-        if person != None:
+        if person == None:
+            print("User does not exist in database. Returning to main menu")
+            return
+        else:
             entry_exists = True
             f_name = person[0]
             l_name = person[1]
@@ -807,7 +811,7 @@ def six():
                 next_five_bool = input('Would you like to see the remaining tickets? y to continue: ')
                 if next_five_bool != 'y':
                     next_five_bool = False
-    
+
     conn.commit()
 
 
@@ -896,6 +900,7 @@ def seven():
     
           
 def eight():
+    # Finds a car owner given the one or more of the make, model, year, color, and plate of the car
     make = input('Enter a make. Leave blank if you do not wish to search by make. Type exit to return to menu. ').strip()
     if make == 'exit':
         return
@@ -921,18 +926,20 @@ def eight():
         return
     elif plate == '':
         plate = '%'
-    if make == '%' and model == '%' and year == '%' and color == '%' and plate == '%':
-        print('You have not entered any values. Returning to main menu')
-        return
-    
+        
     c.execute('''SELECT fname||' '||lname, MAX(r.regdate), r.vin, v.make, v.model, v.year, v.color, r.plate, r.expiry
                 FROM registrations r, vehicles v
                 WHERE r.vin = v.vin
                 AND v.make LIKE ? AND v.model LIKE ? AND v.year LIKE ? AND v.color LIKE ? AND r.plate LIKE ?
                 GROUP BY r.vin;''', (make, model, year, color, plate))
     results = c.fetchall()
-    print(results)
 
+    # If there are no owners of these car specifications
+    if not results:
+        print("There are no owners that correspond to these specifications")
+        return 
+
+    # If there are four or more users for these car specfications
     if len(results) >= 4:
         user_number = 1
         for user in results:
@@ -949,11 +956,15 @@ def eight():
         print()
         print_extra_results(results[selected_user-1])
 
+    # If there are less than four users for these car specifications
     else:
         for user in results:
             print_extra_results(user)
+    
+    print()
         
 def function_eight_results(user):
+    # Print the follow attributes for any result
     print("Make:", user[3])
     print("Model:", user[4])
     print("Year:", user[5])
@@ -961,6 +972,7 @@ def function_eight_results(user):
     print("Plate:", user[7])
 
 def print_extra_results(user):
+    # Print the following attributes when less than four users selected or previously selected one user
     print('-' * 50)
     print("Selected User:", user[0])
     function_eight_results(user)

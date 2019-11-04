@@ -7,8 +7,9 @@ import sys
 
 def main():
     global conn, c 
-    path = sys.argv[1] 
-    conn = sqlite3.connect(path)
+    # path = sys.argv[1] 
+    # conn = sqlite3.connect(path)
+    conn = sqlite3.connect('./database_test.db')
     c = conn.cursor()
     c.execute('PRAGMA foreign_keys=ON; ')
     conn.commit()
@@ -446,7 +447,19 @@ def two(username):
     partner_two = find_person(prt2_fname, prt2_lname)    
     if partner_two == None:
         partner_two = missing_person_info(prt2_fname, prt2_lname)
-  
+        
+    """
+    STATED: two people can register for marriage multiple times
+    https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1254422
+    # this is to check that the two have not already been registered together
+    c.execute(''' SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ? UNION
+                  SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ?;''', (partner_one[0],partner_one[1],partner_two[0], partner_two[1], partner_two[0], partner_two[1], partner_one[0],partner_one[1]))
+    
+    if c.fetchone() != None:
+        print('{} {} and {} {} are already in the marriages database'.format(partner_one[0],partner_one[1],partner_two[0], partner_two[1]))
+        return
+    """
+        
     # REGISTERING FOR MARRIAGE
     # use datetime function for registration date and use a query to find the registration place
     registdate = datetime.date.today()
@@ -615,7 +628,6 @@ def four():
     
     # inserting new registration
     c.execute('INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?);', (regno, today, new_expiry, plate, vin, new_person[0], new_person[1]))
-    conn.commit()
     print("Bill of Sale successful.\n")
     
 def five():
@@ -635,7 +647,7 @@ def five():
         if find_fine(ticket_no) == False:
             return
     else:
-        print("That ticket does not exist in the database.")
+        print("Invalid entry")
         
         
 def find_ticket(tno):
@@ -646,11 +658,12 @@ def find_fine(tno):
     c.execute('SELECT fine FROM tickets WHERE tno =?;', (tno,))
     fine_leftover = int(c.fetchone()[0])
     
-    if fine_leftover == 0:
-        print("\nYou have completed the payment of your fine!")
-        return False
-    else:
-        print("\nThe fine amount outstanding for this ticket number is ${}".format(fine_leftover))
+    # if fine_leftover == 0:
+        # remove_ticket(tno)
+        # print("\nYou have completed the payment of your fine!")
+        # return False
+    # else:
+    print("\nThe fine amount outstanding for this ticket number is ${}".format(fine_leftover))
     
     # use datetime function for registration date and use a query to find the registration place
     pay_date = datetime.date.today()
@@ -676,7 +689,11 @@ def find_fine(tno):
         if pay_amount != '' and pay_amount.isdigit() == True:
             pay_amount = int(pay_amount)
             payment_balance = int(fine_leftover - pay_amount)
-            if payment_balance < 0: 
+            if payment_balance == 0:
+                remove_ticket(tno)
+                print("\nYou have completed the payment of your fine!")
+                return False
+            elif payment_balance < 0:
                 print("Invalid amount")
             else:
                 print("\nYou are making a payment of ${} to ticket number {}".format(pay_amount, tno))
@@ -695,6 +712,11 @@ def find_fine(tno):
     conn.commit()
     
     return
+    conn.commit()
+    
+def remove_ticket(tno):
+    delete_ticket = 'DELETE FROM tickets WHERE tno=?;'
+    c.execute(delete_ticket, (tno,))
     conn.commit()
     
     
@@ -820,7 +842,6 @@ def seven():
             regno = c.fetchone()
             if regno == None:
                 print('That registration number does not exist in the database')
-                return
             else:
                 regno = regno[0]
                 break

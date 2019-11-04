@@ -808,9 +808,10 @@ def six():
                 next_five_bool = input('Would you like to see the remaining tickets? y to continue: ')
                 if next_five_bool != 'y':
                     next_five_bool = False
-
+    
     print("All tickets printed. Returning to main menu")
     print()
+
     conn.commit()
 
 

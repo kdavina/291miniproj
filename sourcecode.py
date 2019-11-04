@@ -7,9 +7,8 @@ import sys
 
 def main():
     global conn, c 
-    # path = sys.argv[1] 
-    # conn = sqlite3.connect(path)
-    conn = sqlite3.connect('./database_test.db')
+    path = sys.argv[1] 
+    conn = sqlite3.connect(path)
     c = conn.cursor()
     c.execute('PRAGMA foreign_keys=ON; ')
     conn.commit()
@@ -447,19 +446,7 @@ def two(username):
     partner_two = find_person(prt2_fname, prt2_lname)    
     if partner_two == None:
         partner_two = missing_person_info(prt2_fname, prt2_lname)
-        
-    """
-    STATED: two people can register for marriage multiple times
-    https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1254422
-    # this is to check that the two have not already been registered together
-    c.execute(''' SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ? UNION
-                  SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ?;''', (partner_one[0],partner_one[1],partner_two[0], partner_two[1], partner_two[0], partner_two[1], partner_one[0],partner_one[1]))
-    
-    if c.fetchone() != None:
-        print('{} {} and {} {} are already in the marriages database'.format(partner_one[0],partner_one[1],partner_two[0], partner_two[1]))
-        return
-    """
-        
+  
     # REGISTERING FOR MARRIAGE
     # use datetime function for registration date and use a query to find the registration place
     registdate = datetime.date.today()
@@ -628,6 +615,7 @@ def four():
     
     # inserting new registration
     c.execute('INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?);', (regno, today, new_expiry, plate, vin, new_person[0], new_person[1]))
+    conn.commit()
     print("Bill of Sale successful.\n")
     
 def five():
@@ -646,6 +634,8 @@ def five():
     if find_ticket(ticket_no) != None:
         if find_fine(ticket_no) == False:
             return
+    else:
+        print("That ticket does not exist in the database.")
         
         
 def find_ticket(tno):
@@ -830,6 +820,7 @@ def seven():
             regno = c.fetchone()
             if regno == None:
                 print('That registration number does not exist in the database')
+                return
             else:
                 regno = regno[0]
                 break

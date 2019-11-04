@@ -897,11 +897,8 @@ def seven():
     
           
 def eight():
-<<<<<<< HEAD
-=======
     print("You have chosen to find a car owner")
     # Finds a car owner given the one or more of the make, model, year, color, and plate of the car
->>>>>>> 7580e240b2fcd1d4b8c41dc7a97e29cffaaaea35
     make = input('Enter a make. Leave blank if you do not wish to search by make. Type exit to return to menu. ').strip()
     if make == 'exit':
         return

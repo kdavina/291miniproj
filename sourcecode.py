@@ -645,10 +645,10 @@ def six():
     # Validate user exists in database
     entry_exists = False
     while not entry_exists:
-        f_name = input("Enter first name. Press enter to exit. ").strip()
+        f_name = input("Enter first name. Press enter to return to menu. ").strip()
         if f_name == '':
             return
-        l_name = input("Enter last name. Press enter to exit. ").strip()
+        l_name = input("Enter last name. Press enter to return to menu. ").strip()
         if l_name == '':
             return
 
@@ -658,14 +658,18 @@ def six():
             f_name = person[0]
             l_name = person[1]
         
+    print('-' * 50)
     print("Driver abstract:")
+    print('-' * 50)
 
     # Get number of tickets
     c.execute('''SELECT count(t.tno)
                 FROM tickets t, registrations r
                 WHERE t.regno = r.regno
                 AND r.fname LIKE ? AND r.lname LIKE ?;''', (f_name, l_name))
-    print("Number of tickets:", c.fetchone()[0])
+    num_tickets = c.fetchone()[0]
+    print("Number of tickets:", num_tickets)
+    
 
     # Get number of demerit notices
     c.execute('''SELECT count(ddate)
@@ -680,15 +684,49 @@ def six():
     c.execute('''SELECT sum(points)
                 FROM demeritNotices
                 WHERE ddate > ? 
-                AND fname LIKE ? AND lname LIKE ?;''', (f_name, l_name, two_years_ago))
+                AND fname LIKE ? AND lname LIKE ?;''', (two_years_ago, f_name, l_name))
     print("Number of demerit points within the last 2 years:", c.fetchone()[0])
-    
+
+    # Get number of demerit points within the lifetime
+    # ASSUMES THAT ENTRY IN DEMERITNOTICES CANNOT EXISTER FOR A PERSON BEFORE THEY WERE BORN
+    c.execute('''SELECT sum(points)
+                FROM demeritNotices
+                WHERE fname LIKE ? AND lname LIKE ?;''', (f_name, l_name))
+    print("Total number of demerit points:", c.fetchone()[0])
+
+    see_tickets = input('Would you like to see the user\'s tickets? y to continue: ')
+    if see_tickets == 'y':
+        # Print 5 tickets at a time latest to oldest. 
+        # For each ticket, get ticket number, violation date, violation description, fine, reg no., make of car, and model of car
+        c.execute('''SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model
+                    FROM tickets t, registrations r, vehicles v
+                    WHERE t.regno = r.regno 
+                    AND r.vin = v.vin
+                    AND r.fname = ? AND r.lname = ?
+                    ORDER BY vdate DESC; ''', (f_name, l_name))
+        all_tickets = c.fetchall()
+        ticket_counter = 0
+        next_five_bool = True
+        while ticket_counter < num_tickets and next_five_bool:
+            for i in range(5):
+                print('-' * 50)
+                print('Ticket number:', all_tickets[ticket_counter][0])
+                print('Violdation date:', all_tickets[ticket_counter][1])
+                print('Violation description:', all_tickets[ticket_counter][2])
+                print('Fine:', all_tickets[ticket_counter][3])
+                print('Registration Number:', all_tickets[ticket_counter][4])
+                print('Car make:', all_tickets[ticket_counter][5])
+                print('Car model:', all_tickets[ticket_counter][6])
+                ticket_counter += 1
+                if ticket_counter == num_tickets:
+                    break
+            if ticket_counter < num_tickets:
+                next_five_bool = input('Would you like to see the remaining tickets? y to continue: ')
+                if next_five_bool != 'y':
+                    next_five_bool = False
 
 
 
-
-    
-    
 # ISSUE A TICKET
 # given a regnum
 # print out persons fname and lname, make model year and color registered to the car

@@ -9,9 +9,8 @@ import sys
 
 def main():
     global conn, c 
-    # path = sys.argv[1] 
-    # conn = sqlite3.connect(path)
-    conn = sqlite3.connect('./database_test.db')
+    path = sys.argv[1] 
+    conn = sqlite3.connect(path)
     c = conn.cursor()
     c.execute('PRAGMA foreign_keys=ON; ')
     conn.commit()

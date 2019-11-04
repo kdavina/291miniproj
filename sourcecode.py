@@ -667,10 +667,10 @@ def find_fine(tno):
     fine_leftover = int(c.fetchone()[0])
     
     if fine_leftover == 0:
-        print("You have completed the payment of your fine!")
+        print("\nYou have completed the payment of your fine!")
         return False
     else:
-        print("The fine amount outstanding for this ticket number is ${}".format(fine_leftover))
+        print("\nThe fine amount outstanding for this ticket number is ${}".format(fine_leftover))
     
     # use datetime function for registration date and use a query to find the registration place
     pay_date = datetime.date.today()
@@ -685,7 +685,7 @@ def find_fine(tno):
                 if (str(i) == str(pay_date)):
                     break
             else:
-                print("You have already made a payment on ticket {} today".format(tno))
+                print("\nYou have already made a payment on ticket {} today".format(tno))
                 print("Please try payment on this ticket again another day")
                 return False
 
@@ -699,7 +699,7 @@ def find_fine(tno):
             if payment_balance < 0: 
                 print("Invalid amount")
             else:
-                print("You are making a payment of ${} to ticket number {}".format(pay_amount, tno))
+                print("\nYou are making a payment of ${} to ticket number {}".format(pay_amount, tno))
                 print("Your new balance of the ticket fine is ${}".format(payment_balance))
             break
         else:
@@ -728,6 +728,7 @@ def six():
     
     # Validate user exists in database
     entry_exists = False
+    print("You have chosen to get a driver abstract")
     while not entry_exists:
         f_name = input("Enter first name. Press enter to return to menu. ").strip()
         if f_name == '':
@@ -900,6 +901,7 @@ def seven():
     
           
 def eight():
+    print("You have chosen to find a car owner")
     # Finds a car owner given the one or more of the make, model, year, color, and plate of the car
     make = input('Enter a make. Leave blank if you do not wish to search by make. Type exit to return to menu. ').strip()
     if make == 'exit':

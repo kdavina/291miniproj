@@ -57,7 +57,8 @@ def main():
                     except ValueError:
                         print('Invalid action')
         
-        # run the action               
+        # run the action  
+        print('\n')
         if action == '': break                
         elif action == 1: one(username)
         elif action == 2: two(username)
@@ -82,13 +83,19 @@ def login():
         c.execute('SELECT uid FROM users WHERE uid LIKE ? and pwd=?;', (username, password))
         if c.fetchone() != None:
             print("Login Success.")
+            print('\n')
             return True, username
         else:
             print("Login failed. Try again")
+            print('\n')
             return False, username
     else:
         print("Login failed. Try again")
+        print('\n')
         return False, username
+
+    
+    
     
 def agent_menu():
     action_space = 30
@@ -140,8 +147,7 @@ def officer_menu():
     action = input("Choose a task: ")
     return action    
     
-    
-# YOU NEED TO CHECK IF THE PERSON ALREADY IS IN THE BIRTH TABLE    
+
 def one(user):
     print("You have chosen to register a birth")
     print('Note that first and last names are a maximum of 12 characters')
@@ -249,11 +255,7 @@ def one(user):
     # creating unique registration number
     # we find the current highest registration number and add 1 
     c.execute('SELECT regno FROM births ORDER BY regno DESC')
-    reg_num = c.fetchone()
-    if reg_num == None:
-        reg_num = 1
-    else:
-        reg_num = reg_num[0] + 1
+    reg_num = c.fetchone()[0] + 1
     
     # REGISTER A PERSON FIRST
     # We need to grab address and phone number from mom
@@ -458,7 +460,6 @@ def three():
     conn.commit()
 
 def four():
-    print('\n')
     print('You have chosen to process a bill of sale')
     
     # grab and validate information

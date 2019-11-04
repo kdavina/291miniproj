@@ -822,7 +822,40 @@ def seven():
     
           
 def eight():
-    pass
+    make = input('Enter a make. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
+    if make == 'exit':
+        return
+    elif make == '':
+        make = '%'
+    model = input('Enter a model. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
+    if model == 'exit':
+        return
+    elif model == '':
+        model = '%'
+    year = input('Enter a year. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
+    if year == 'exit':
+        return
+    elif year == '':
+        year = '%'
+    color = input('Enter a color. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
+    if color == 'exit':
+        return
+    elif color == '':
+        color = '%'
+    plate = input('Enter a plate. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
+    if plate == 'exit':
+        return
+    elif plate == '':
+        plate = '%'
+    if make == '%' and model == '%' and year == '%' and color == '%' and plate == '%':
+        print('You have not entered any values. Returning to main menu')
+        return
+    
+    c.execute('''SELECT DISTINCT fname||' '||lname 
+                FROM registrations r, vehicles v
+                WHERE r.vin = v.vin
+                AND v.make LIKE ? AND v.model LIKE ? AND v.year LIKE ? AND v.color LIKE ? AND r.plate LIKE ?;''', (make, model, year, color, plate))
+    print(c.fetchall())
 
 if __name__ == "__main__":
     main()

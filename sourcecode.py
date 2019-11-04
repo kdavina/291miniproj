@@ -28,15 +28,6 @@ def main():
             
             # depending on utype, run the menu until we get a valid action
             while True:
-                c.execute('SELECT * FROM persons')
-                print(c.fetchall())
-                print('\n')
-                c.execute('SELECT * FROM registrations')
-                print(c.fetchall())
-                print('\n')
-                c.execute('SELECT * FROM tickets')
-                print(c.fetchall())
-                
                 # if the user is an agent, their action range is only from 1 - 6
                 # if we get an empty input that means they want to exit out of the program
                 if utype == 'a':

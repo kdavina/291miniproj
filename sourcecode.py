@@ -658,11 +658,6 @@ def find_fine(tno):
     c.execute('SELECT fine FROM tickets WHERE tno =?;', (tno,))
     fine_leftover = int(c.fetchone()[0])
     
-    # if fine_leftover == 0:
-        # remove_ticket(tno)
-        # print("\nYou have completed the payment of your fine!")
-        # return False
-    # else:
     print("\nThe fine amount outstanding for this ticket number is ${}".format(fine_leftover))
     
     # use datetime function for registration date and use a query to find the registration place

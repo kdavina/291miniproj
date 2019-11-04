@@ -564,13 +564,14 @@ def five():
         else:
             print("Invalid ticket number")
             
-    if find_ticket(ticket_no) != None:
-        if find_fine(ticket_no) == False:
-            return
+    if find_ticket(ticket_no) == None:
+        print("Invalid ticket number")
+    elif find_fine(ticket_no) == False:
+        return
         
 def find_ticket(tno):
-    c.execute('SELECT tno FROM tickets WHERE tno =?;', (tno,))
-    return c.fetchone()[0]
+    c.execute('SELECT tno FROM tickets WHERE tno LIKE ?;', (tno,))
+    return c.fetchone()
 
 def find_fine(tno):
     c.execute('SELECT fine FROM tickets WHERE tno =?;', (tno,))

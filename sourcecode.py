@@ -887,6 +887,7 @@ def eight():
     # If there are no owners of these car specifications
     if not results:
         print("There are no owners that correspond to these specifications")
+        print()
         return 
 
     # If there are four or more users for these car specfications

@@ -143,10 +143,10 @@ def insert_data():
     users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton'), ('officeruid', 'poopy', 'o', 'Officer', 'Poopy', 'Calgary')]
     
     vehicles_sql = "INSERT INTO vehicles(vin,make,model,year,color) VALUES (?, ?, ?, ?, ?)"
-    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red'),('U300', 'Mercedes', 'SL 230', 1964, 'black')]
+    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red'),('U300', 'Mercedes', 'SL 230', 1964, 'black'),('U400', 'Mercedes', 'SL 240', 1985, 'blue')]
     
     registration_sql = "INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    registration_values = [(300, '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen'),(400, '2014-02-21', '2015-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen'),(500,'2020-01-01','2021-01-01','WREKT','U300','Jim','Halpert')]
+    registration_values = [(300, '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen'),(400, '2014-02-21', '2015-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen'),(500,'2020-01-01','2021-01-01','WREKT','U300','Jim','Halpert'),(600, '2030-05-23', '2031-05-23', 'BALLIN', 'U400', 'Jim', 'Halpert')]
     
     tickets_sql = "INSERT INTO tickets(tno,regno,fine,violation,vdate) VALUES (?, ?, ?, ?, ?)"
     tickets_values = [('400','300','4','speeding','1964-08-20')]
@@ -163,6 +163,7 @@ def insert_data():
     demerits_values5 = [('2016-02-20', 'Amanda', 'Nguyen', 2, 'Speeding')]
     demerits_values5 = [('2010-10-31', 'Amanda', 'Nguyen', 8, 'Drunk driving')]
     demerits_values6 = [('2019-09-28', 'Amanda', 'Nguyen', 12, 'Unlicenced driving')]
+    demerits_values7 = [('2030-05-27', 'Jim', 'Halpert', 12, 'SKIING')]
 
     c.executemany(persons_sql,persons_values)
     c.executemany(users_sql,users_values)
@@ -180,7 +181,7 @@ def insert_data():
     c.executemany(demerits_sql, demerits_values4)
     c.executemany(demerits_sql, demerits_values5)
     c.executemany(demerits_sql, demerits_values6)
-
+    c.executemany(demerits_sql, demerits_values7)
     conn.commit()
     return
 

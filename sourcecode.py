@@ -566,8 +566,9 @@ def five():
             print("Invalid ticket number")
             
     if find_ticket(ticket_no) != None:
-        find_fine(ticket_no)
-
+        if find_fine(ticket_no) == False:
+            return
+        
 def find_ticket(tno):
     c.execute('SELECT tno FROM tickets WHERE tno =?;', (tno,))
     return c.fetchone()[0]
@@ -575,16 +576,30 @@ def find_ticket(tno):
 def find_fine(tno):
     c.execute('SELECT fine FROM tickets WHERE tno =?;', (tno,))
     fine_leftover = int(c.fetchone()[0])
-    print("The fine amount outstanding for this ticket number is ${}".format(fine_leftover))
     
-    # # use datetime function for registration date and use a query to find the registration place
-    # pay_date = datetime.date.today()
-    # c.execute('SELECT pdate FROM payments WHERE tno = ?;', (tno,))
-    # old_paydate = str(c.fetchone()[0])
+    if fine_leftover == 0:
+        print("You have completed the payment of your fine!")
+        return False
+    else:
+        print("The fine amount outstanding for this ticket number is ${}".format(fine_leftover))
     
-    # if old_paydate == str(pay_date):
-        # print("You cannot make multiple payments on ticket {} today".format(tno))
-        # payment_invalid()
+    # use datetime function for registration date and use a query to find the registration place
+    pay_date = datetime.date.today()
+    c.execute('SELECT pdate FROM tickets t, payments p WHERE t.tno = p.tno AND t.tno = ?;', (tno,))
+    old_paydate = c.fetchall()
+        
+    while True:   
+        if len(old_paydate) == 0:
+            break
+        else:
+            for i in old_paydate:
+                if (str(i) == str(pay_date)):
+                    break
+            else:
+                print("You have already made a payment on ticket {} today".format(tno))
+                print("Please try payment on this ticket again another day")
+                return False
+
     
     while True:
         pay_amount = input("Please provide the amount you would like to pay: ")
@@ -592,31 +607,15 @@ def find_fine(tno):
         if pay_amount != '' and pay_amount.isdigit() == True:
             pay_amount = int(pay_amount)
             payment_balance = int(fine_leftover - pay_amount)
-            if payment_balance <= 0: 
+            if payment_balance < 0: 
                 print("Invalid amount")
             else:
                 print("You are making a payment of ${} to ticket number {}".format(pay_amount, tno))
-                print("Your new balance of the ticket fine is {}".format(payment_balance))
+                print("Your new balance of the ticket fine is ${}".format(payment_balance))
             break
         else:
             print("Invalid amount")
-    
-    # use datetime function for registration date and use a query to find the registration place
-    pay_date = datetime.date.today()
-    
-    # c.execute('SELECT pdate FROM marriages WHERE tno = ?;', (tno,))
-    # old_pay_date = c.fetchone[0]
-    
-    # if old_pay_date != pay_date:
-        # update_tickets(tno, pay_date, pay_amount, payment_balance)
-    # else:
-        # print("You cannot make multiple payments on ticket {} today".format(tno))
-    
-    
-    # return tno, pay_date, pay_amount, payment_balance
-    # conn.commit()
-    
-# def update_tickets(tno, pay_date, pay_amount, payment_balance):
+ 
 
     payment_register = 'INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)'
     c.execute(payment_register, (tno, pay_date, pay_amount))
@@ -628,11 +627,6 @@ def find_fine(tno):
     
     return
     conn.commit()
-    
-# def payment_invalid():
-    # print("Please try payment on this ticket again another day")
-    
-    # conn.commit()
     
     
     
@@ -646,37 +640,88 @@ def six():
     # Validate user exists in database
     entry_exists = False
     while not entry_exists:
-        f_name = input("Enter first name. Press enter to exit. ").strip()
+        f_name = input("Enter first name. Press enter to return to menu. ").strip()
         if f_name == '':
             return
-        l_name = input("Enter last name. Press enter to exit. ").strip()
+        l_name = input("Enter last name. Press enter to return to menu. ").strip()
         if l_name == '':
             return
 
-        c.execute("SELECT fname FROM persons WHERE fname LIKE ? AND lname LIKE ?; ", (f_name, l_name))
-        if c.fetchone() != None:
+        person = find_person(f_name, l_name)
+        if person != None:
             entry_exists = True
+            f_name = person[0]
+            l_name = person[1]
         
+    print('-' * 50)
     print("Driver abstract:")
+    print('-' * 50)
 
     # Get number of tickets
     c.execute('''SELECT count(t.tno)
                 FROM tickets t, registrations r
                 WHERE t.regno = r.regno
                 AND r.fname LIKE ? AND r.lname LIKE ?;''', (f_name, l_name))
-    print(c.fetchone()[0])
+    num_tickets = c.fetchone()[0]
+    print("Number of tickets:", num_tickets)
+    
 
     # Get number of demerit notices
-    c.execute('''SELECT count()
-                FROM tickets t, registrations r
-                WHERE t.regno = r.regno
-                AND r.fname LIKE ? AND r.lname LIKE ?;''', (f_name, l_name))
+    c.execute('''SELECT count(ddate)
+                FROM demeritNotices
+                WHERE fname LIKE ? AND lname LIKE ?;''', (f_name, l_name))
+    print("Number of demerit notices:", c.fetchone()[0])
+
+    # Get number of demerit points within the last 2 years
+    two_years_ago = datetime.date.today()
+    two_years_ago = two_years_ago.replace(year = two_years_ago.year - 2)
+
+    c.execute('''SELECT sum(points)
+                FROM demeritNotices
+                WHERE ddate > ? 
+                AND fname LIKE ? AND lname LIKE ?;''', (two_years_ago, f_name, l_name))
+    print("Number of demerit points within the last 2 years:", c.fetchone()[0])
+
+    # Get number of demerit points within the lifetime
+    # ASSUMES THAT ENTRY IN DEMERITNOTICES CANNOT EXISTER FOR A PERSON BEFORE THEY WERE BORN
+    c.execute('''SELECT sum(points)
+                FROM demeritNotices
+                WHERE fname LIKE ? AND lname LIKE ?;''', (f_name, l_name))
+    print("Total number of demerit points:", c.fetchone()[0])
+
+    see_tickets = input('Would you like to see the user\'s tickets? y to continue: ')
+    if see_tickets == 'y':
+        # Print 5 tickets at a time latest to oldest. 
+        # For each ticket, get ticket number, violation date, violation description, fine, reg no., make of car, and model of car
+        c.execute('''SELECT t.tno, t.vdate, t.violation, t.fine, t.regno, v.make, v.model
+                    FROM tickets t, registrations r, vehicles v
+                    WHERE t.regno = r.regno 
+                    AND r.vin = v.vin
+                    AND r.fname = ? AND r.lname = ?
+                    ORDER BY vdate DESC; ''', (f_name, l_name))
+        all_tickets = c.fetchall()
+        ticket_counter = 0
+        next_five_bool = True
+        while ticket_counter < num_tickets and next_five_bool:
+            for i in range(5):
+                print('-' * 50)
+                print('Ticket number:', all_tickets[ticket_counter][0])
+                print('Violdation date:', all_tickets[ticket_counter][1])
+                print('Violation description:', all_tickets[ticket_counter][2])
+                print('Fine:', all_tickets[ticket_counter][3])
+                print('Registration Number:', all_tickets[ticket_counter][4])
+                print('Car make:', all_tickets[ticket_counter][5])
+                print('Car model:', all_tickets[ticket_counter][6])
+                ticket_counter += 1
+                if ticket_counter == num_tickets:
+                    break
+            if ticket_counter < num_tickets:
+                next_five_bool = input('Would you like to see the remaining tickets? y to continue: ')
+                if next_five_bool != 'y':
+                    next_five_bool = False
 
 
 
-
-    
-    
 # ISSUE A TICKET
 # given a regnum
 # print out persons fname and lname, make model year and color registered to the car

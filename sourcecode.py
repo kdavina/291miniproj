@@ -712,7 +712,8 @@ def six():
                 next_five_bool = input('Would you like to see the remaining tickets? y to continue: ')
                 if next_five_bool != 'y':
                     next_five_bool = False
-
+    
+    conn.commit()
 
 
 # ISSUE A TICKET
@@ -835,15 +836,12 @@ def eight():
             user_number += 1
         valid_input = False
         while not valid_input:
-            selected_user = int(input("Select a user"))
+            print()
+            selected_user = int(input("Select a user number: "))
             if selected_user <= user_number:
                 valid_input = True
-        print_extra_results(user[user_number-1])
-        # print('-'*50)
-        # print("Selected User:", user[user_number-1][0])
-        # function_eight_results(user[user_number-1])
-        # print("Latest registration date:", user[user_number-1][1])
-        # print("Expiry date:", user[user_number-1][8])
+        print()
+        print_extra_results(results[selected_user-1])
 
     else:
         for user in results:

@@ -136,25 +136,23 @@ def define_tables():
 def insert_data():
     global conn, c
     persons_sql = "INSERT INTO persons(fname, lname, bdate, bplace, address, phone) VALUES (?,?,?,?,?,?)"
-    persons_values = [('Amanda', 'Nguyen', '1999-01-28', 'Edmonton', '16115 - 140 Street', '780 902 9107'),('Jim','Halpert','1950-01-01','Scranton','IDK', '123-456-7890'),('pam','halpert','1111-01-01','Scranton','NULL','123-456-7890'), ('Officer','Poopy','2010-05-04','Calgary','Happy Lane','123-456-7889')]
-
-    
+    persons_values = [('Amanda', 'Nguyen', '1999-01-28', 'Edmonton', '16115 - 140 Street', '780 902 9107'),('Jim','Halpert','1950-01-01','Scranton','IDK', '123-456-7890'),('pam','halpert','1111-01-01','Scranton','NULL','123-456-7890'), ('Officer','Poopy','2010-05-04','Calgary','Happy Lane','123-456-7889'), ('miley', 'cyrus', 'NULL', 'NULL', 'NULL','NULL')]
     users_sql = "INSERT INTO users(uid, pwd, utype, fname, lname, city) VALUES (?, ?, ?, ?, ?, ?)"
     users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton'), ('officeruid', 'poopy', 'o', 'Officer', 'Poopy', 'Calgary')]
     
     vehicles_sql = "INSERT INTO vehicles(vin,make,model,year,color) VALUES (?, ?, ?, ?, ?)"
-    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red'),('U300', 'Mercedes', 'SL 230', 1964, 'black'),('U400', 'Mercedes', 'SL 240', 1985, 'blue')]
+    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red'),('U300', 'Mercedes', 'SL 230', 1964, 'black'),('U400', 'Mercedes', 'SL 240', 1985, 'blue'), ('U500', 'Toyota', 'MP 350', 2000, 'green'), ('U600', 'Honda', 'TY 678', 1999, 'black'), ('U700', 'Volkswagon', 'HW 012', 2005, 'gold')]
     
     registration_sql = "INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    registration_values = [(300, '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen'),(400, '2014-02-21', '2015-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen'),(500,'2020-01-01','2021-01-01','WREKT','U300','Jim','Halpert'),(600, '2030-05-23', '2031-05-23', 'BALLIN', 'U400', 'Jim', 'Halpert')]
+    registration_values = [(300, '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen'),(400, '2014-02-21', '2015-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen'),(500,'2020-01-01','2021-01-01','WREKT','U300','Jim','Halpert'),(600, '2030-05-23', '2031-05-23', 'BALLIN', 'U400', 'Jim', 'Halpert'), (700, '2010-03-04','1965-05-25', 'DISNEY','U500', 'pam', 'halpert'), (800, '2000-09-03','1965-05-25', 'DISNEY','U600', 'pam', 'halpert'), (900, '2019-08-12','1965-05-25', 'DISNEY','U700', 'miley', 'cyrus'), (1000, '2015-06-21','1965-05-25', 'DISNEY','U500', 'Amanda', 'Nguyen')]
     
     tickets_sql = "INSERT INTO tickets(tno,regno,fine,violation,vdate) VALUES (?, ?, ?, ?, ?)"
-    tickets_values = [('400','300','4','speeding','1964-08-20')]
-    tickets_values2 = [('500', '400', '5', 'skidooshing', '2025-09-01')]
-    tickets_values3 = [('600', '400', '2', 'crying', '2025-10-10')]
-    tickets_values4 = [('700', '400', '2', 'cancelled', '2029-12-12')]
-    tickets_values5 = [('800', '300', '1', 'flaking', '2030-01-01')]
-    tickets_values6 = [('900', '300', '6', 'imtired', '2031-08-07')]
+    tickets_values = [(400,300,4,'speeding','1964-08-20')]
+    tickets_values2 = [(500, 400, 5, 'skidooshing', '2025-09-01')]
+    tickets_values3 = [(600, 400, 2, 'crying', '2025-10-10')]
+    tickets_values4 = [(700, 400, 2, 'cancelled', '2029-12-12')]
+    tickets_values5 = [(800, 300, 1, 'flaking', '2030-01-01')]
+    tickets_values6 = [(900, 300, 6, 'imtired', '2031-08-07')]
     demerits_sql = "INSERT INTO demeritNotices(ddate, fname, lname, points, desc) VALUES (?, ?, ?, ?, ?)"
     demerits_values = [('2018-07-20', 'Amanda', 'Nguyen', 4, 'Speeding')]
     demerits_values2 = [('2019-03-20', 'Amanda', 'Nguyen', 12, 'Driving armor vehicles')]

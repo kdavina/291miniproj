@@ -7,7 +7,7 @@ import sys
 
 def main():
     global conn, c 
-    # path = sysargv[1] 
+    # path = sys.argv[1] 
     # conn = sqlite3.connect(path)
     conn = sqlite3.connect('./database_test.db')
     c = conn.cursor()
@@ -20,7 +20,7 @@ def main():
     while login_screen == False:
         login_screen, username = login()
         if username == '':
-            break;
+            break
         if login_screen:
             # figuring out if user is an officer or agent and assigning it to a variable
             c.execute('SELECT utype FROM users WHERE uid LIKE ?;', (username,)) 
@@ -471,17 +471,17 @@ def three():
         current_regno = current_regno.strip()
         if current_regno == '':
             return
-        c.execute('SELECT regdate FROM registrations WHERE regno = ?;', (current_regno,))
-        db_regdate = c.fetchone()
-        if db_regdate == None:
+        c.execute('SELECT expiry FROM registrations WHERE regno = ?;', (current_regno,))
+        db_expiry = c.fetchone()
+        if db_expiry == None:
             print('This registration number is not registered in the database')
         else:
-            db_regdate = db_regdate[0]
-            db_regdate = datetime.datetime.strptime(db_regdate, "%Y-%m-%d")
+            db_expiry = db_expiry[0]
+            db_expiry = datetime.datetime.strptime(db_expiry, "%Y-%m-%d")
             entry_exists = True
 
 
-    if datetime.datetime.today() >= db_regdate:
+    if datetime.datetime.today() >= db_expiry:
         # Registration has expired or expires today, set new expiry date to one year from today
         print("Current registration has expired, system is setting new expiry date to one year from today")
         today = datetime.date.today()
@@ -499,7 +499,6 @@ def three():
         exp_year = int(exp_year) + 1
         new_exp = str(exp_year) + '-' + exp_month + '-' + exp_day
         c.execute("UPDATE registrations SET expiry = ? WHERE regno = ?;", (new_exp, current_regno))
-
         
     conn.commit()
 
@@ -766,7 +765,8 @@ def six():
                 next_five_bool = input('Would you like to see the remaining tickets? y to continue: ')
                 if next_five_bool != 'y':
                     next_five_bool = False
-
+    
+    conn.commit()
 
 
 # ISSUE A TICKET
@@ -845,7 +845,77 @@ def seven():
     
           
 def eight():
-    pass
+    make = input('Enter a make. Leave blank if you do not wish to search by make. Type exit to return to menu. ').strip()
+    if make == 'exit':
+        return
+    elif make == '':
+        make = '%'
+    model = input('Enter a model. Leave blank if you do not wish to search by make. Type exit to return to menu. ').strip()
+    if model == 'exit':
+        return
+    elif model == '':
+        model = '%'
+    year = input('Enter a year. Leave blank if you do not wish to search by make. Type exit to return to menu. ').strip()
+    if year == 'exit':
+        return
+    elif year == '':
+        year = '%'
+    color = input('Enter a color. Leave blank if you do not wish to search by make. Type exit to return to menu. ').strip()
+    if color == 'exit':
+        return
+    elif color == '':
+        color = '%'
+    plate = input('Enter a plate. Leave blank if you do not wish to search by make. Type exit to return to menu. ').strip()
+    if plate == 'exit':
+        return
+    elif plate == '':
+        plate = '%'
+    if make == '%' and model == '%' and year == '%' and color == '%' and plate == '%':
+        print('You have not entered any values. Returning to main menu')
+        return
+    
+    c.execute('''SELECT fname||' '||lname, MAX(r.regdate), r.vin, v.make, v.model, v.year, v.color, r.plate, r.expiry
+                FROM registrations r, vehicles v
+                WHERE r.vin = v.vin
+                AND v.make LIKE ? AND v.model LIKE ? AND v.year LIKE ? AND v.color LIKE ? AND r.plate LIKE ?
+                GROUP BY r.vin;''', (make, model, year, color, plate))
+    results = c.fetchall()
+    print(results)
+
+    if len(results) >= 4:
+        user_number = 1
+        for user in results:
+            print('-' * 50)
+            print("Entry:", user_number)
+            function_eight_results(user)
+            user_number += 1
+        valid_input = False
+        while not valid_input:
+            print()
+            selected_user = int(input("Select a user number: "))
+            if selected_user <= user_number:
+                valid_input = True
+        print()
+        print_extra_results(results[selected_user-1])
+
+    else:
+        for user in results:
+            print_extra_results(user)
+        
+def function_eight_results(user):
+    print("Make:", user[3])
+    print("Model:", user[4])
+    print("Year:", user[5])
+    print("Color:", user[6])
+    print("Plate:", user[7])
+
+def print_extra_results(user):
+    print('-' * 50)
+    print("Selected User:", user[0])
+    function_eight_results(user)
+    print("Latest registration date:", user[1])
+    print("Expiry date:", user[8])
+
 
 if __name__ == "__main__":
     main()

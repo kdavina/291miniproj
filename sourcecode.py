@@ -30,8 +30,11 @@ def main():
             while True:
                 c.execute('SELECT * FROM persons')
                 print(c.fetchall())
-                
+                print('\n')
                 c.execute('SELECT * FROM registrations')
+                print(c.fetchall())
+                print('\n')
+                c.execute('SELECT * FROM tickets')
                 print(c.fetchall())
                 
                 # if the user is an agent, their action range is only from 1 - 6
@@ -195,7 +198,9 @@ def one(user):
     
     while True:
         lname = input("Please provide a last name: ")
-        if lname != '' and re.match("^[A-Za-z0-9-]*$", lname) and len(lname) <= 12 :
+        if lname == '':
+            return
+        elif re.match("^[A-Za-z0-9-]*$", lname) and len(lname) <= 12 :
             break 
         else:
             print("Incorrect format")
@@ -210,7 +215,9 @@ def one(user):
     # check gender, simple m or f
     while True:
         gender = input("Please provide the gender (M/F): ")
-        if gender.upper() == 'F' or gender.upper() == 'M':
+        if gender == '':
+            return
+        elif gender.upper() == 'F' or gender.upper() == 'M':
             break
         else:
             print('Incorrect format')
@@ -220,6 +227,8 @@ def one(user):
     # if our input passes the datetime function and the length is one, then concatenate a 0 at the front
     while True:
         bdate = input("Please provide a birth date (YYYY-MM-DD): ")
+        if bdate == '':
+            return
         try:
             year, month, day = bdate.split('-')
             datetime.datetime(int(year),int(month),int(day))
@@ -235,7 +244,9 @@ def one(user):
     # validate and receive the birth place
     while True:
         bplace = input("Please provide a birth place (max character length is 20): ")
-        if bplace != '' and bplace.isalpha() and len(bplace) <= 20:
+        if bplace == '':
+            return
+        elif bplace.isalpha() and len(bplace) <= 20:
             break    
         else:
             print('Incorrect format')
@@ -243,14 +254,18 @@ def one(user):
     # validate and receive mother's name
     while True:
         mot_fname = input("Please provide mother's first name: ")
-        if mot_fname != '' and re.match("^[A-Za-z0-9-]*$", mot_fname) and len(mot_fname) <= 12:
+        if mot_fname == '':
+            return
+        elif re.match("^[A-Za-z0-9-]*$", mot_fname) and len(mot_fname) <= 12:
             break
         else:
             print("Incorrect format")
         
     while True:
         mot_lname = input("Please provide mother's last name: ")
-        if mot_lname != '' and re.match("^[A-Za-z0-9-]*$", mot_lname) and len(mot_lname) <= 12:
+        if mot_lname == '':
+            return
+        elif re.match("^[A-Za-z0-9-]*$", mot_lname) and len(mot_lname) <= 12:
             break
         else:
             print("Incorrect format")
@@ -263,14 +278,18 @@ def one(user):
     # validate and receive father's name
     while True:
         fat_fname = input("Please provide father's first name: ")
-        if fat_fname != '' and re.match("^[A-Za-z0-9-]*$", fat_fname) and len(fat_fname) <= 12:
+        if fat_fname == '':
+            return
+        elif re.match("^[A-Za-z0-9-]*$", fat_fname) and len(fat_fname) <= 12:
             break 
         else:
             print("Incorrect format")
         
     while True:
         fat_lname = input("Please provide father's last name: ")
-        if fat_lname != '' and re.match("^[A-Za-z0-9-]*$", fat_lname) and len(fat_lname) <= 12:
+        if fat_lname == '':
+            return
+        elif re.match("^[A-Za-z0-9-]*$", fat_lname) and len(fat_lname) <= 12:
             break
         else:
             print("Incorrect format")
@@ -402,7 +421,9 @@ def two(username):
     
     while True:
         prt1_lname = input("Please provide Partner 1's last name: ")
-        if prt1_lname != '' and len(prt1_lname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt1_lname):
+        if prt1_lname == '':
+            return
+        elif len(prt1_lname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt1_lname):
             break 
         else:
             print("Incorrect format")
@@ -415,14 +436,18 @@ def two(username):
     # grabbing information about partner 2         
     while True:
         prt2_fname = input("Please provide Partner 2's first name: ")
-        if prt2_fname != '' and len(prt2_fname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt2_fname):
+        if prt2_fname == '':
+            return
+        elif len(prt2_fname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt2_fname):
             break
         else:
             print("Incorrect format")
     
     while True:
         prt2_lname = input("Please provide Partner 2's last name: ")
-        if prt2_lname != '' and len(prt2_lname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt2_lname):
+        if prt2_lname == '':
+            return
+        elif len(prt2_lname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt2_lname):
             break 
         else:
             print("Incorrect format")
@@ -431,7 +456,10 @@ def two(username):
     partner_two = find_person(prt2_fname, prt2_lname)    
     if partner_two == None:
         partner_two = missing_person_info(prt2_fname, prt2_lname)
-    
+        
+    """
+    STATED: two people can register for marriage multiple times
+    https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1254422
     # this is to check that the two have not already been registered together
     c.execute(''' SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ? UNION
                   SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ?;''', (partner_one[0],partner_one[1],partner_two[0], partner_two[1], partner_two[0], partner_two[1], partner_one[0],partner_one[1]))
@@ -439,7 +467,7 @@ def two(username):
     if c.fetchone() != None:
         print('{} {} and {} {} are already in the marriages database'.format(partner_one[0],partner_one[1],partner_two[0], partner_two[1]))
         return
-    
+    """
         
     # REGISTERING FOR MARRIAGE
     # use datetime function for registration date and use a query to find the registration place
@@ -457,7 +485,7 @@ def two(username):
                 (regno, registdate, registplace, partner_one[0], partner_one[1], partner_two[0], partner_two[1]))
     conn.commit()
 
-    print("Marriage registration successful\n")
+    print("Marriage registration successful.\n")
     
 def three():
  # Provide existing registration number, and renew the registration.
@@ -520,7 +548,9 @@ def four():
     # grabbing current owner
     while True:
         current_fname = input('What is the first name of the current owner? ')
-        if current_fname != '' and re.match("^[A-Za-z0-9-]*$", current_fname) and len(current_fname) <= 12:
+        if current_fname == '':
+            return
+        elif re.match("^[A-Za-z0-9-]*$", current_fname) and len(current_fname) <= 12:
             break
         else:
             print('Invalid input')
@@ -528,7 +558,9 @@ def four():
     
     while True:
         current_lname = input('What is the last name of the current owner? ')
-        if current_lname != '' and re.match("^[A-Za-z0-9-]*$", current_lname) and len(current_lname) <= 12:
+        if current_lname == '':
+            return
+        elif re.match("^[A-Za-z0-9-]*$", current_lname) and len(current_lname) <= 12:
             break
         else:
             print('Invalid input') 
@@ -542,14 +574,18 @@ def four():
     # getting new owner
     while True:
         new_fname = input('What is the first name of the new owner? ')
-        if new_fname != '' and re.match("^[A-Za-z0-9-]*$", new_fname) and len(new_fname) <= 12:
+        if new_fname == '':
+            return
+        elif re.match("^[A-Za-z0-9-]*$", new_fname) and len(new_fname) <= 12:
             break
         else:
             print('Invalid input')
             
     while True:
         new_lname = input('What is the last name of the new owner? ')
-        if new_lname != '' and re.match("^[A-Za-z0-9-]*$", new_lname) and len(new_lname) <= 12:
+        if new_lname == '':
+            return
+        elif re.match("^[A-Za-z0-9-]*$", new_lname) and len(new_lname) <= 12:
             break
         else:
             print('Invalid input')  
@@ -563,7 +599,9 @@ def four():
             
     while True:
         plate = input('What is the plate number? ')
-        if plate != '' and len(plate) <= 7:
+        if plate == '':
+            return
+        elif len(plate) <= 7:
             break
         else:
             print('Invalid input')
@@ -580,11 +618,9 @@ def four():
         print('New sale rejected.\n')
         return;
     
-    vin = result[3]
-    
-    
+    # assign vin
     # change expiry date of old owner's car to today's date
-    # today is a datetime object so do you need to convert it to a string???
+    vin = result[3]
     regno = result[2]
     today = datetime.date.today()
     c.execute('UPDATE registrations SET expiry = ? WHERE regno = ?;', (today, regno))
@@ -595,29 +631,34 @@ def four():
     year, month, day = today_string.split('-')
     new_expiry = str(set_db_regyear) + '-' + month + '-' + day    
     
+    # creating a unique regno
     c.execute('SELECT regno FROM registrations ORDER BY regno DESC')
     regno = c.fetchone()[0] + 1
     
+    # inserting new registration
     c.execute('INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?);', (regno, today, new_expiry, plate, vin, new_person[0], new_person[1]))
     print("Bill of Sale successful.\n")
     
 def five():
     print("You have chosen to process a payment")
+    print("To go back to the menu, press enter")
     
     while True:
         ticket_no = input("Please provide the ticket number you'd like to make a payment to: ")
-        if ticket_no != '' and ticket_no.isdigit() == True:
+        if ticket_no == '':
+            return
+        elif ticket_no.isdigit() == True:
             break
         else:
             print("Invalid ticket number")
             
-    if find_ticket(ticket_no) == None:
-        print("Invalid ticket number")
-    elif find_fine(ticket_no) == False:
-        return
+    if find_ticket(ticket_no) != None:
+        if find_fine(ticket_no) == False:
+            return
+        
         
 def find_ticket(tno):
-    c.execute('SELECT tno FROM tickets WHERE tno LIKE ?;', (tno,))
+    c.execute('SELECT tno FROM tickets WHERE tno =?;', (tno,))
     return c.fetchone()
 
 def find_fine(tno):
@@ -778,13 +819,17 @@ def six():
 # violation date is set to today's date if not provided
 def seven():
     print("You have chosen to issue a ticket:")
+    print("Press enter to return to main menu")
     
     # receive a registration number from the officer 
     # first we check that it is not empty and that the input is all digits
     # convert our variable into an int type then check to see if there is a registration number in the database
     while True:
         regno = input("Please provide a valid registration number: ")
-        if regno != '' and regno.isdigit():
+        if regno == '':
+            return
+        
+        elif regno.isdigit():
             regno = int(regno)
             c.execute('SELECT regno FROM registrations WHERE regno = ?;', (regno,))
             regno = c.fetchone()
@@ -803,7 +848,7 @@ def seven():
     # Grabbing information for the ticket 
     print("Please fill out the following information down below.\n")
     while True:
-        vdate = input("Please provide a violation date (YYYY-MM-DD). Hit enter if not applicable: ")
+        vdate = input("Please provide a violation date (YYYY-MM-DD). Hit enter if not applicable (will not exit action): ")
         if vdate == '':
             vdate =  datetime.date.today()
             break
@@ -825,15 +870,20 @@ def seven():
         if violation != '':
             break
         else:
-            print('Invalid input')
+            return
     
     while True:
         fine = input('Please provide a fine amount (minimum: $1): ')
-        fine = int(fine)
-        if fine > 1:
-            break
-        else:
-            print('Invalid input')
+        if fine == '':
+            return
+        try:
+            fine = int(fine)
+            if fine > 1:
+                break
+            else:
+                print('Invalid input')
+        except:
+            print("Invalid input")
             
     # creating a tno
     # find the current highest ticket number and increase it by 1

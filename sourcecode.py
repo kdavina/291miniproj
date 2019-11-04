@@ -565,8 +565,9 @@ def five():
             print("Invalid ticket number")
             
     if find_ticket(ticket_no) != None:
-        find_fine(ticket_no)
-
+        if find_fine(ticket_no) == False:
+            return
+        
 def find_ticket(tno):
     c.execute('SELECT tno FROM tickets WHERE tno =?;', (tno,))
     return c.fetchone()[0]
@@ -574,16 +575,30 @@ def find_ticket(tno):
 def find_fine(tno):
     c.execute('SELECT fine FROM tickets WHERE tno =?;', (tno,))
     fine_leftover = int(c.fetchone()[0])
-    print("The fine amount outstanding for this ticket number is ${}".format(fine_leftover))
     
-    # # use datetime function for registration date and use a query to find the registration place
-    # pay_date = datetime.date.today()
-    # c.execute('SELECT pdate FROM payments WHERE tno = ?;', (tno,))
-    # old_paydate = str(c.fetchone()[0])
+    if fine_leftover == 0:
+        print("You have completed the payment of your fine!")
+        return False
+    else:
+        print("The fine amount outstanding for this ticket number is ${}".format(fine_leftover))
     
-    # if old_paydate == str(pay_date):
-        # print("You cannot make multiple payments on ticket {} today".format(tno))
-        # payment_invalid()
+    # use datetime function for registration date and use a query to find the registration place
+    pay_date = datetime.date.today()
+    c.execute('SELECT pdate FROM tickets t, payments p WHERE t.tno = p.tno AND t.tno = ?;', (tno,))
+    old_paydate = c.fetchall()
+        
+    while True:   
+        if len(old_paydate) == 0:
+            break
+        else:
+            for i in old_paydate:
+                if (str(i) == str(pay_date)):
+                    break
+            else:
+                print("You have already made a payment on ticket {} today".format(tno))
+                print("Please try payment on this ticket again another day")
+                return False
+
     
     while True:
         pay_amount = input("Please provide the amount you would like to pay: ")
@@ -591,31 +606,15 @@ def find_fine(tno):
         if pay_amount != '' and pay_amount.isdigit() == True:
             pay_amount = int(pay_amount)
             payment_balance = int(fine_leftover - pay_amount)
-            if payment_balance <= 0: 
+            if payment_balance < 0: 
                 print("Invalid amount")
             else:
                 print("You are making a payment of ${} to ticket number {}".format(pay_amount, tno))
-                print("Your new balance of the ticket fine is {}".format(payment_balance))
+                print("Your new balance of the ticket fine is ${}".format(payment_balance))
             break
         else:
             print("Invalid amount")
-    
-    # use datetime function for registration date and use a query to find the registration place
-    pay_date = datetime.date.today()
-    
-    # c.execute('SELECT pdate FROM marriages WHERE tno = ?;', (tno,))
-    # old_pay_date = c.fetchone[0]
-    
-    # if old_pay_date != pay_date:
-        # update_tickets(tno, pay_date, pay_amount, payment_balance)
-    # else:
-        # print("You cannot make multiple payments on ticket {} today".format(tno))
-    
-    
-    # return tno, pay_date, pay_amount, payment_balance
-    # conn.commit()
-    
-# def update_tickets(tno, pay_date, pay_amount, payment_balance):
+ 
 
     payment_register = 'INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)'
     c.execute(payment_register, (tno, pay_date, pay_amount))
@@ -627,11 +626,6 @@ def find_fine(tno):
     
     return
     conn.commit()
-    
-# def payment_invalid():
-    # print("Please try payment on this ticket again another day")
-    
-    # conn.commit()
     
     
     

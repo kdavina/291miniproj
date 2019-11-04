@@ -20,45 +20,23 @@ def main():
     while login_screen == False:
         login_screen, username = login()
     
-    # figuring out if user is an officer or agent
+    # figuring out if user is an officer or agent and assigning it to a variable
     c.execute('SELECT utype FROM users WHERE uid LIKE ?;', (username,)) 
     utype = c.fetchone()[0]
     
-    # run the menu until we get a valid action
+    # depending on utype, run the menu until we get a valid action
     while True:
+        # if the user is an agent, their action range is only from 1 - 6
+        # if we get an empty input that means they want to exit out of the program
         if utype == 'a':
-            while True:
-                action = agent_menu()
-                if action == '':
-                    print('Exiting program')
-                    break
-                else:
-                    try:
-                        action = int(action)
-                        if action < 1 or action > 6:
-                            print('Invalid number')
-                        else:
-                            break
-                    except ValueError:
-                        print('Invalid action')
+            action = agent_menu()
+                        
+        # if the user is an officer, their action range is from 1 - 8
         elif utype == 'o':
-            while True:
-                action = officer_menu()
-                if action == '':
-                    print('Exiting program')
-                    break
-                else:
-                    try:
-                        action = int(action)
-                        if action < 1 or action > 8:
-                            print('Invalid action')
-                        else:
-                            break
-                    except ValueError:
-                        print('Invalid action')
+            action = officer_menu()
+                
         
-        # run the action  
-        print('\n')
+        # run the action 
         if action == '': break                
         elif action == 1: one(username)
         elif action == 2: two(username)
@@ -69,16 +47,17 @@ def main():
         elif action == 7: seven()
         elif action == 8: eight()    
                      
-
-    
-
-
+# we will return if login was successful or not and the username given to us
 def login():
+    # grab the information from the user
     print("Login Here!")
     username = input("Enter username: ")
     password = getpass.getpass("Enter Password: ")
     
     # re.match is checking if our username and password contains alphabet, numbers and underscores ONLY
+    # if that passes, we want to see if the username and password that we receive is in the database
+    # if we fetch it and it is does NOT give us none, that means we found an uid and password that matches
+    # if the username/password is wrong we return false
     if re.match("^[A-Za-z0-9_]*$", username) and re.match("^[A-Za-z0-9_]*$", password):
         c.execute('SELECT uid FROM users WHERE uid LIKE ? and pwd=?;', (username, password))
         if c.fetchone() != None:
@@ -94,67 +73,104 @@ def login():
         print('\n')
         return False, username
 
-    
-    
-    
+# the agent menu consists of seven options including the option to exit out of the program
 def agent_menu():
+    # these are just variables in order to create a table
     action_space = 30
     number_space = 15
-    border = '------------------------------------------------'
-    print(border)
     
-    print("|%s|%s|" % ("Register a birth".center(action_space), '1'.center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Register a marriage".center(action_space), "2".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Renew a vehicle registration".center(action_space), "3".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Process a bill of sale".center(action_space), "4".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Process a payment".center(action_space), "5".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Get a driver abstract".center(action_space), "6".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Exit program".center(action_space), "Press Enter".center(number_space)))
-    print(border)
-    action = input("Choose a task: ")
-    return action
-
+    while True:
+        print("Status: Agent")
+        border = '------------------------------------------------'
+        print(border)
+        
+        print("|%s|%s|" % ("Register a birth".center(action_space), '1'.center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Register a marriage".center(action_space), "2".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Renew a vehicle registration".center(action_space), "3".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Process a bill of sale".center(action_space), "4".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Process a payment".center(action_space), "5".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Get a driver abstract".center(action_space), "6".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Exit program".center(action_space), "Press Enter".center(number_space)))
+        print(border)
+        action = input("Choose a task: ")
+        
+        # if the action we receive from the user is empty, we exit out of the program
+        # otherwise we check if we can convert it to an integer then see if it is in the range
+        # we end the loop when we get a valid action otherwise we keep prompting the menu
+        if action == '':
+            print('Exiting program')
+            return action
+        else:
+            try:
+                action = int(action)
+                if action < 1 or action > 6:
+                    print('Invalid action')
+                else:
+                    return action
+            except ValueError:
+                print('Invalid action')    
+                
+# the officer menu has 9 options including exiting the program
 def officer_menu():
+    # variables in order to create our table
     action_space = 30
     number_space = 15
-    border = '------------------------------------------------'
-    print(border)
     
-    print("|%s|%s|" % ("Register a birth".center(action_space), '1'.center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Register a marriage".center(action_space), "2".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Renew a vehicle registration".center(action_space), "3".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Process a bill of sale".center(action_space), "4".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Process a payment".center(action_space), "5".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Get a driver abstract".center(action_space), "6".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Issue a ticket".center(action_space), "7".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Find a car owner".center(action_space), "8".center(number_space)))
-    print(border)
-    print("|%s|%s|" % ("Exit program".center(action_space), "Press Enter".center(number_space)))
-    print(border)    
-    action = input("Choose a task: ")
-    return action    
-    
-
+    while True:
+        print("Status: Officer")
+        border = '------------------------------------------------'
+        print(border)
+        print("|%s|%s|" % ("Register a birth".center(action_space), '1'.center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Register a marriage".center(action_space), "2".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Renew a vehicle registration".center(action_space), "3".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Process a bill of sale".center(action_space), "4".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Process a payment".center(action_space), "5".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Get a driver abstract".center(action_space), "6".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Issue a ticket".center(action_space), "7".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Find a car owner".center(action_space), "8".center(number_space)))
+        print(border)
+        print("|%s|%s|" % ("Exit program".center(action_space), "Press Enter".center(number_space)))
+        print(border)    
+        action = input("Choose a task: ")
+        
+        # validation similar to agent except our range increases up to 8
+        if action == '':
+            print('Exiting program')
+            return action
+        else:
+            try:
+                action = int(action)
+                if action < 1 or action > 8:
+                    print('Invalid action')
+                else:
+                    return action
+            except ValueError:
+                print('Invalid action')
+ 
+# Register a birth:
+# 1. Check if the name already exists in the persons table
+# 2. If the mom and dad do not exist in the database, get some values in order to register them
+# 3. Insert into the persons table first and then into the births table in order to uphold foreign key constraints
 def one(user):
     print("You have chosen to register a birth")
     print('Note that first and last names are a maximum of 12 characters')
     
     # Receive information about birth information
     # Most of the validation is checking the length restricted to whatever it is in the database
-    # or checking that a name only consists of letters and is not empty
+    # or checking that a name only consists of letters, numbers and dashes and is not empty
     while True:
         fname = input("Please provide a first name: ")
         if fname != '' and len (fname) <= 12 and re.match("^[A-Za-z0-9-]*$", fname):
@@ -176,6 +192,7 @@ def one(user):
         print('Birth registration rejected.\n')
         return;
     
+    # check gender, simple m or f
     while True:
         gender = input("Please provide the gender (M/F): ")
         if gender.upper() == 'F' or gender.upper() == 'M':
@@ -198,6 +215,7 @@ def one(user):
         except ValueError:
             print("Invalid Date")
     
+    # validate and receive the birth place
     while True:
         bplace = input("Please provide a birth place (max character length is 20): ")
         if bplace != '' and bplace.isalpha() and len(bplace) <= 20:
@@ -205,7 +223,7 @@ def one(user):
         else:
             print('Incorrect format')
             
-       
+    # validate and receive mother's name
     while True:
         mot_fname = input("Please provide mother's first name: ")
         if mot_fname != '' and re.match("^[A-Za-z0-9-]*$", mot_fname) and len(mot_fname) <= 12:
@@ -225,6 +243,7 @@ def one(user):
     if mom_name == None:
         mom_name = missing_person_info(mot_fname, mot_lname)    
     
+    # validate and receive father's name
     while True:
         fat_fname = input("Please provide father's first name: ")
         if fat_fname != '' and re.match("^[A-Za-z0-9-]*$", fat_fname) and len(fat_fname) <= 12:
@@ -245,19 +264,7 @@ def one(user):
         dad_name = missing_person_info(fat_fname, fat_lname)
      
      
-    
-    # REGISTERING FOR BIRTH
-    # use datetime function for registration date and use a query to find the regplace
-    regdate = datetime.date.today()
-    c.execute('SELECT city FROM users where uid = ?;', (user,))
-    regplace = c.fetchone()[0]
-    
-    # creating unique registration number
-    # we find the current highest registration number and add 1 
-    c.execute('SELECT regno FROM births ORDER BY regno DESC')
-    reg_num = c.fetchone()[0] + 1
-    
-    # REGISTER A PERSON FIRST
+    # REGISTERING AS A PERSON
     # We need to grab address and phone number from mom
     # note that address and phone number is in an indexed list called result
     c.execute('SELECT address, phone FROM persons where fname LIKE ? and lname LIKE ?;', (mom_name[0], mom_name[1]))
@@ -267,15 +274,26 @@ def one(user):
                   (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, result[0], result[1]))
     conn.commit()
     
-    # THIS IS REGISTERING A BIRTH
+    # REGISTERING BIRTH
+    # use datetime function for registration date and use a query to find the regplace
+    regdate = datetime.date.today()
+    c.execute('SELECT city FROM users where uid = ?;', (user,))
+    regplace = c.fetchone()[0]
+    
+    # creating unique registration number
+    # we find the current highest registration number and add 1 
+    c.execute('SELECT regno FROM births ORDER BY regno DESC')
+    reg_num = c.fetchone()[0] + 1    
     
     c.execute(''' INSERT INTO births(regno, fname, lname, regdate, regplace, gender, f_fname, f_lname, m_fname, m_lname)
                   VALUES (?,?,?,?,?,?,?,?,?,?)''', 
                 (reg_num, fname, lname, regdate, regplace, gender, dad_name[0], dad_name[1], mom_name[0], mom_name[1]))
     conn.commit()
+    
     print("Birth registration successful\n")
     
 # this function checks if this person exists in the database already
+# note that it will either return None or the first and last name which (if saved into a variable) can be treated as a list
 def find_person(fname, lname):
     c.execute('SELECT fname, lname FROM persons WHERE fname LIKE ? and lname LIKE ?;', (fname, lname))
     return c.fetchone()
@@ -343,10 +361,12 @@ def missing_person_info(fname, lname):
                   (?,?,?,?,?,?)''', (fname, lname, bdate, bplace, address, phone_number))
     conn.commit()
     
+    print('\n')
     return fname, lname
 
     
-    
+# Registering a marriage
+# Receiving partner one and two information, if they don't exist register them into the persons data base
 def two(username):
     print("You have chosen to register a marriage")
     
@@ -389,6 +409,15 @@ def two(username):
     partner_two = find_person(prt2_fname, prt2_lname)    
     if partner_two == None:
         partner_two = missing_person_info(prt2_fname, prt2_lname)
+    
+    # this is to check that the two have not already been registered together
+    c.execute(''' SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ? UNION
+                  SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ?;''', (partner_one[0],partner_one[1],partner_two[0], partner_two[1], partner_two[0], partner_two[1], partner_one[0],partner_one[1]))
+    
+    if c.fetchone() != None:
+        print('{} {} and {} {} are already in the marriages database'.format(partner_one[0],partner_one[1],partner_two[0], partner_two[1]))
+        return
+    
         
     # REGISTERING FOR MARRIAGE
     # use datetime function for registration date and use a query to find the registration place
@@ -396,14 +425,11 @@ def two(username):
     c.execute('SELECT city FROM users where uid = ?;', (username,))
     registplace = c.fetchone()[0]
     
-    # grabbing a random and unique registration
+    # find the highest regno and add one in order to create a new regno
     c.execute('SELECT regno FROM marriages ORDER BY regno DESC')
-    regno = c.fetchone()
-    if regno == None:
-        regno = 1
-    else:
-        regno = regno[0] + 1
+    regno = c.fetchone()[0] + 1
     
+    # register them into marriages
     c.execute(''' INSERT INTO marriages(regno, regdate, regplace, p1_fname, p1_lname, p2_fname, p2_lname)
                   VALUES (?,?,?,?,?,?,?)''', 
                 (regno, registdate, registplace, partner_one[0], partner_one[1], partner_two[0], partner_two[1]))

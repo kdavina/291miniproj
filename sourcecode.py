@@ -931,7 +931,7 @@ def eight():
                 AND v.make LIKE ? AND v.model LIKE ? AND v.year LIKE ? AND v.color LIKE ? AND r.plate LIKE ?
                 GROUP BY r.vin;''', (make, model, year, color, plate))
     results = c.fetchall()
-    print(results)
+ 
 
     if len(results) >= 4:
         user_number = 1

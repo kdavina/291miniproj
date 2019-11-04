@@ -141,11 +141,11 @@ def insert_data():
     users_values = [('amanda6', 'password', 'a', 'Amanda', 'Nguyen', 'Edmonton'), ('officeruid', 'poopy', 'o', 'Officer', 'Poopy', 'Calgary')]
     
     vehicles_sql = "INSERT INTO vehicles(vin,make,model,year,color) VALUES (?, ?, ?, ?, ?)"
-    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red'),('U300', 'Mercedes', 'SL 230', 1964, 'black'),('U400', 'Mercedes', 'SL 240', 1985, 'blue'), ('U500', 'Toyota', 'MP 350', 2000, 'green'), ('U600', 'Honda', 'TY 678', 1999, 'black'), ('U700', 'Volkswagon', 'HW 012', 2005, 'gold')]
-    
+    vehicles_values = [('U200', 'Chevrolet', 'Camaro', 1969, 'red'),('U300', 'Mercedes', 'SL 230', 1964, 'black'),('U400', 'Mercedes', 'SL 240', 1985, 'blue'), ('U500', 'Mercedes', 'MP 350', 2000, 'green'), ('U600', 'Mercedes', 'TY 678', 1999, 'black'), ('U700', 'Mercedes', 'HW 012', 2005, 'gold')]
+
     registration_sql = "INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    registration_values = [(300, '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen'),(400, '2014-02-21', '2015-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen'),(500,'2020-01-01','2021-01-01','WREKT','U300','Jim','Halpert'),(600, '2030-05-23', '2031-05-23', 'BALLIN', 'U400', 'Jim', 'Halpert'), (700, '2010-03-04','1965-05-25', 'DISNEY','U500', 'pam', 'halpert'), (800, '2000-09-03','1965-05-25', 'DISNEY','U600', 'pam', 'halpert'), (900, '2019-08-12','1965-05-25', 'DISNEY','U700', 'miley', 'cyrus'), (1000, '2015-06-21','1965-05-25', 'DISNEY','U500', 'Amanda', 'Nguyen')]
-    
+    registration_values = [(300, '1964-05-26','1965-05-25', 'DISNEY','U200', 'Amanda', 'Nguyen'),(400, '2014-02-21', '2015-02-20', 'WREKT', 'U300', 'Amanda', 'Nguyen')]
+    registration_values2 = [(500,'2020-01-01','2021-01-01','WREKT','U300','Jim','Halpert'),(600, '2030-05-23', '2031-05-23', 'BALLIN', 'U400', 'Jim', 'Halpert'), (700, '2010-03-04','1965-05-25', 'DISNEY','U500', 'pam', 'halpert'), (800, '2000-09-03','1965-05-25', 'DISNEY','U600', 'pam', 'halpert'), (900, '2019-08-12','1965-05-25', 'DISNEY','U700', 'miley', 'cyrus'), (1000, '2015-06-21','1965-05-25', 'DISNEY','U500', 'Amanda', 'Nguyen')]
     tickets_sql = "INSERT INTO tickets(tno,regno,fine,violation,vdate) VALUES (?, ?, ?, ?, ?)"
     tickets_values = [(400,300,4,'speeding','1964-08-20')]
     tickets_values2 = [(500, 400, 5, 'skidooshing', '2025-09-01')]
@@ -167,6 +167,7 @@ def insert_data():
     c.executemany(users_sql,users_values)
     c.executemany(vehicles_sql, vehicles_values)
     c.executemany(registration_sql, registration_values)
+    c.executemany(registration_sql, registration_values2)
     c.executemany(tickets_sql, tickets_values)
     c.executemany(tickets_sql, tickets_values2)
     c.executemany(tickets_sql, tickets_values3)

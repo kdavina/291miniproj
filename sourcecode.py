@@ -393,14 +393,16 @@ def missing_person_info(fname, lname):
     print('\n')
     return fname, lname
 
-    
-# Registering a marriage
-# Receiving partner one and two information, if they don't exist register them into the persons data base
+
+# Register a marriage:
+# 1. Check if both of the partners' names already exists in the persons table
+# 2. If they don't exist in database get information to register them in the persons table first(optional)
+# 3. Insert into the persons table first and then into the marriages table in order to uphold foreign key constraints    
 def two(username):
     print("You have chosen to register a marriage")
     print("To go back to the menu, press enter")
     
-    # Receiving information about partner 1
+    # Prompt user to input first name of Partner 1
     while True:
         prt1_fname = input("Please provide Partner 1's first name: ")
         if prt1_fname == '':
@@ -410,6 +412,7 @@ def two(username):
         else:
             print("Incorrect format")
     
+    # Prompt user to input first name of Partner 1
     while True:
         prt1_lname = input("Please provide Partner 1's last name: ")
         if prt1_lname == '':
@@ -419,12 +422,12 @@ def two(username):
         else:
             print("Incorrect format")
             
-    # check to see if partner_one exists in the database        
+    # check to see if partner_one exists in the database and if they don't, go to missing_person_info function to register them in persons table      
     partner_one = find_person(prt1_fname, prt1_lname)
     if partner_one == None:
         partner_one = missing_person_info(prt1_fname, prt1_lname)
     
-    # grabbing information about partner 2         
+    # Prompt user to input first name of Partner 2         
     while True:
         prt2_fname = input("Please provide Partner 2's first name: ")
         if prt2_fname == '':
@@ -434,6 +437,7 @@ def two(username):
         else:
             print("Incorrect format")
     
+    # Prompt user to input first name of Partner 2
     while True:
         prt2_lname = input("Please provide Partner 2's last name: ")
         if prt2_lname == '':
@@ -443,7 +447,7 @@ def two(username):
         else:
             print("Incorrect format")
             
-    # check to see if partner two exists in the database
+    # check to see if partner_one exists in the database and if they don't, go to missing_person_info function to register them in persons table
     partner_two = find_person(prt2_fname, prt2_lname)    
     if partner_two == None:
         partner_two = missing_person_info(prt2_fname, prt2_lname)
@@ -460,17 +464,16 @@ def two(username):
         return
     """
         
-    # REGISTERING FOR MARRIAGE
-    # use datetime function for registration date and use a query to find the registration place
+    # use datetime function to get and set registration date to today and use a query to find the registration place from users table
     registdate = datetime.date.today()
     c.execute('SELECT city FROM users where uid = ?;', (username,))
     registplace = c.fetchone()[0]
     
-    # find the highest regno and add one in order to create a new regno
+    # find the highest regno and add one in order to create a new regno (always unique)
     c.execute('SELECT regno FROM marriages ORDER BY regno DESC')
     regno = c.fetchone()[0] + 1
     
-    # register them into marriages
+    # add marraige information into the marriages table in the database
     c.execute(''' INSERT INTO marriages(regno, regdate, regplace, p1_fname, p1_lname, p2_fname, p2_lname)
                   VALUES (?,?,?,?,?,?,?)''', 
                 (regno, registdate, registplace, partner_one[0], partner_one[1], partner_two[0], partner_two[1]))
@@ -479,7 +482,7 @@ def two(username):
     print("Marriage registration successful.\n")
     
 def three():
- # Provide existing registration number, and renew the registration.
+    # Provide existing registration number, and renew the registration.
     # If the current registration has expired or expires today set the new expiry date to one year from today's date
     # Otherwise, set the new expiry to one year after the current expiry date.
     print("You have chosen to renew a vehicle registration.")
@@ -629,11 +632,17 @@ def four():
     # inserting new registration
     c.execute('INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?);', (regno, today, new_expiry, plate, vin, new_person[0], new_person[1]))
     print("Bill of Sale successful.\n")
-    
+
+
+# Making a payment on a ticket
+# 1. Ask user to input ticket number, validate and if it doesn't exist break out of function and into main menu
+# 2. If ticket exists in tickets table, get fine amount from tickets table and ask user to select payment amount, then validate amount
+# 3. Record payment amount in payments table and tickets table, then exit function
 def five():
     print("You have chosen to process a payment")
     print("To go back to the menu, press enter")
     
+    # Prompt user for ticket number they'd like to make a payment to and validate the inputted value
     while True:
         ticket_no = input("Please provide the ticket number you'd like to make a payment to: ")
         if ticket_no == '':
@@ -642,29 +651,36 @@ def five():
             break
         else:
             print("Invalid ticket number")
-            
+    
+    # If ticket does not exist in database, print "Invalid entry" and break out of the function and into main menu
+    # If ticket exists, iterate through the find_fine function and return to main menu if find_fine function returns False
     if find_ticket(ticket_no) != None:
         if find_fine(ticket_no) == False:
             return
     else:
         print("Invalid entry")
         
-        
+
+# Check to see if ticket exists in the tickets table in the database       
 def find_ticket(tno):
     c.execute('SELECT tno FROM tickets WHERE tno =?;', (tno,))
     return c.fetchone()
 
+
 def find_fine(tno):
+    # Get the fine amount from the tickets table in the database   
     c.execute('SELECT fine FROM tickets WHERE tno =?;', (tno,))
     fine_leftover = int(c.fetchone()[0])
     
     print("\nThe fine amount outstanding for this ticket number is ${}".format(fine_leftover))
     
-    # use datetime function for registration date and use a query to find the registration place
+    # Use datetime function to assign today's date to pay_date
     pay_date = datetime.date.today()
+    # Check to see if tno exists in payments table already then get pdate from payments table
     c.execute('SELECT pdate FROM tickets t, payments p WHERE t.tno = p.tno AND t.tno = ?;', (tno,))
     old_paydate = c.fetchall()
-        
+    
+    # while statement to check if old_paydate in payments table is same as today's date
     while True:   
         if len(old_paydate) == 0:
             break
@@ -673,21 +689,23 @@ def find_fine(tno):
                 if (str(i) == str(pay_date)):
                     break
             else:
+                # if old_paydate is same as today's date, print below statement and break out of function five into main menu
                 print("\nYou have already made a payment on ticket {} today".format(tno))
                 print("Please try payment on this ticket again another day")
                 return False
 
-    
+    # Prompt user to input amount they'd like to pay towards fine
     while True:
         pay_amount = input("Please provide the amount you would like to pay: ")
-        
+        # validate the pay_amount entered
         if pay_amount != '' and pay_amount.isdigit() == True:
             pay_amount = int(pay_amount)
             payment_balance = int(fine_leftover - pay_amount)
+            # if payment_balance is 0, then user has completed payment of ticket, iterate to fine_paidinfull function and then exit function five
             if payment_balance == 0:
-                remove_ticket(tno)
-                print("\nYou have completed the payment of your fine!")
+                fine_paidinfull(tno, pay_date, pay_amount)
                 return False
+            # check to see if pay_amount is less than fine amount
             elif payment_balance < 0:
                 print("Invalid amount")
             else:
@@ -697,22 +715,33 @@ def find_fine(tno):
         else:
             print("Invalid amount")
  
-
+    # register the users payment information in the payments table
     payment_register = 'INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)'
     c.execute(payment_register, (tno, pay_date, pay_amount))
     conn.commit()
     
+    # update the tickets table with the new payment_balance amount
     update_tickets = 'UPDATE tickets SET fine=? WHERE tno=?;'
     c.execute(update_tickets, (payment_balance, tno))
     conn.commit()
     
     return
     conn.commit()
-    
-def remove_ticket(tno):
-    delete_ticket = 'DELETE FROM tickets WHERE tno=?;'
-    c.execute(delete_ticket, (tno,))
+
+# if the payment_balance is 0 after user makes payment, update the tickets table and payments table in the database
+# then print following statement    
+def fine_paidinfull(tno, pay_date, pay_amount):
+    # update the payments table with the transaction
+    payment_register = 'INSERT INTO payments(tno, pdate, amount) VALUES (?,?,?)'
+    c.execute(payment_register, (tno, pay_date, pay_amount))
     conn.commit()
+    
+    # update the tickets table with the new payment_balance amount
+    update_tickets = 'UPDATE tickets SET fine=? WHERE tno=?;'
+    c.execute(update_tickets, (payment_balance, tno))
+    conn.commit()
+    
+    print("\nYou have completed the payment of your fine!")
     
     
     

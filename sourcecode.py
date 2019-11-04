@@ -19,41 +19,54 @@ def main():
     # LOGIN SCREEN
     while login_screen == False:
         login_screen, username = login()
-    
-    # figuring out if user is an officer or agent and assigning it to a variable
-    c.execute('SELECT utype FROM users WHERE uid LIKE ?;', (username,)) 
-    utype = c.fetchone()[0]
-    
-    # depending on utype, run the menu until we get a valid action
-    while True:
-        # if the user is an agent, their action range is only from 1 - 6
-        # if we get an empty input that means they want to exit out of the program
-        if utype == 'a':
-            action = agent_menu()
-                        
-        # if the user is an officer, their action range is from 1 - 8
-        elif utype == 'o':
-            action = officer_menu()
+        if username == '':
+            break;
+        if login_screen:
+            # figuring out if user is an officer or agent and assigning it to a variable
+            c.execute('SELECT utype FROM users WHERE uid LIKE ?;', (username,)) 
+            utype = c.fetchone()[0]
+            
+            # depending on utype, run the menu until we get a valid action
+            while True:
+                c.execute('SELECT * FROM persons')
+                print(c.fetchall())
                 
-        
-        # run the action 
-        if action == '': break                
-        elif action == 1: one(username)
-        elif action == 2: two(username)
-        elif action == 3: three()
-        elif action == 4: four()
-        elif action == 5: five()
-        elif action == 6: six()
-        elif action == 7: seven()
-        elif action == 8: eight()    
+                c.execute('SELECT * FROM registrations')
+                print(c.fetchall())
+                
+                # if the user is an agent, their action range is only from 1 - 6
+                # if we get an empty input that means they want to exit out of the program
+                if utype == 'a':
+                    action = agent_menu()
+                                
+                # if the user is an officer, their action range is from 1 - 8
+                elif utype == 'o':
+                    action = officer_menu()
+                        
+                
+                # run the action 
+                if action == '': 
+                    login_screen = False
+                    break                
+                elif action == 1: one(username)
+                elif action == 2: two(username)
+                elif action == 3: three()
+                elif action == 4: four()
+                elif action == 5: five()
+                elif action == 6: six()
+                elif action == 7: seven()
+                elif action == 8: eight()    
                      
 # we will return if login was successful or not and the username given to us
 def login():
     # grab the information from the user
     print("Login Here!")
+    print("Hit enter for both username and password to exit out of program")
     username = input("Enter username: ")
     password = getpass.getpass("Enter Password: ")
     
+    if username == '' and password == '':
+        return True, username
     # re.match is checking if our username and password contains alphabet, numbers and underscores ONLY
     # if that passes, we want to see if the username and password that we receive is in the database
     # if we fetch it and it is does NOT give us none, that means we found an uid and password that matches
@@ -96,7 +109,7 @@ def agent_menu():
         print(border)
         print("|%s|%s|" % ("Get a driver abstract".center(action_space), "6".center(number_space)))
         print(border)
-        print("|%s|%s|" % ("Exit program".center(action_space), "Press Enter".center(number_space)))
+        print("|%s|%s|" % ("Logout".center(action_space), "Press Enter".center(number_space)))
         print(border)
         action = input("Choose a task: ")
         
@@ -104,7 +117,7 @@ def agent_menu():
         # otherwise we check if we can convert it to an integer then see if it is in the range
         # we end the loop when we get a valid action otherwise we keep prompting the menu
         if action == '':
-            print('Exiting program')
+            print('Exiting program\n')
             return action
         else:
             try:
@@ -142,7 +155,7 @@ def officer_menu():
         print(border)
         print("|%s|%s|" % ("Find a car owner".center(action_space), "8".center(number_space)))
         print(border)
-        print("|%s|%s|" % ("Exit program".center(action_space), "Press Enter".center(number_space)))
+        print("|%s|%s|" % ("Logout".center(action_space), "Press Enter".center(number_space)))
         print(border)    
         action = input("Choose a task: ")
         
@@ -167,13 +180,15 @@ def officer_menu():
 def one(user):
     print("You have chosen to register a birth")
     print('Note that first and last names are a maximum of 12 characters')
-    
+    print("To go back to the menu, press enter")
     # Receive information about birth information
     # Most of the validation is checking the length restricted to whatever it is in the database
     # or checking that a name only consists of letters, numbers and dashes and is not empty
     while True:
         fname = input("Please provide a first name: ")
-        if fname != '' and len (fname) <= 12 and re.match("^[A-Za-z0-9-]*$", fname):
+        if fname == '':
+            return
+        elif len (fname) <= 12 and re.match("^[A-Za-z0-9-]*$", fname):
             break
         else:
             print("Incorrect format")
@@ -210,6 +225,8 @@ def one(user):
             datetime.datetime(int(year),int(month),int(day))
             if len(month) == 1:
                 month = "0" + month
+            if len(day) == 1:
+                day = "0" + day           
             bdate = year +'-' + month +'-'+ day
             break
         except ValueError:
@@ -314,7 +331,9 @@ def missing_person_info(fname, lname):
                 year, month, day = bdate.split('-')
                 datetime.datetime(int(year),int(month),int(day))
                 if len(month) == 1:
-                    month = "0" + month   
+                    month = "0" + month  
+                if len(day) == 1:
+                    day = "0" + day                      
                 bdate = year +'-' + month +'-'+ day                    
                 break
             except ValueError:
@@ -369,11 +388,14 @@ def missing_person_info(fname, lname):
 # Receiving partner one and two information, if they don't exist register them into the persons data base
 def two(username):
     print("You have chosen to register a marriage")
+    print("To go back to the menu, press enter")
     
     # Receiving information about partner 1
     while True:
         prt1_fname = input("Please provide Partner 1's first name: ")
-        if prt1_fname != '' and len(prt1_fname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt1_fname):
+        if prt1_fname == '':
+            return
+        elif len(prt1_fname) <= 12 and re.match("^[A-Za-z0-9-]*$", prt1_fname):
             break
         else:
             print("Incorrect format")
@@ -441,10 +463,11 @@ def three():
  # Provide existing registration number, and renew the registration.
     # If the current registration has expired or expires today set the new expiry date to one year from today's date
     # Otherwise, set the new expiry to one year after the current expiry date.
-
+    print("You have chosen to renew a vehicle registration.")
+    print("To go back to the menu, press enter.")
     entry_exists = False
     while not entry_exists:
-        current_regno = input('Enter an existing registration number. To go back to menu press enter: ')
+        current_regno = input('Enter an existing registration number: ')
         current_regno = current_regno.strip()
         if current_regno == '':
             return
@@ -466,10 +489,7 @@ def three():
         set_db_regyear = datetime.date.today().year + 1
         year, month, day = today_string.split('-')
         new_expiry = str(set_db_regyear) + '-' + month + '-' + day
-        c.execute("UPDATE registrations SET regdate = ? WHERE regno = ?;", (new_expiry, current_regno))
-        # TESTING
-        # c.execute("SELECT regdate FROM registrations WHERE regno = ?;", (current_regno,))
-        # print(c.fetchone()[0])
+        c.execute("UPDATE registrations SET expiry = ? WHERE regno = ?;", (new_expiry, current_regno))
     
     else:
         print("Setting the new expiry date to a year from current expiry date")
@@ -478,21 +498,22 @@ def three():
         exp_year, exp_month, exp_day = old_expiry_str.split('-')
         exp_year = int(exp_year) + 1
         new_exp = str(exp_year) + '-' + exp_month + '-' + exp_day
-        c.execute("UPDATE registrations SET regdate = ? WHERE regno = ?;", (new_exp, current_regno))
-        #TESTING
-        # c.execute("SELECT regdate FROM registrations WHERE regno = ?;", (current_regno,))
-        # print(c.fetchone()[0])
+        c.execute("UPDATE registrations SET expiry = ? WHERE regno = ?;", (new_exp, current_regno))
+
         
     conn.commit()
 
 def four():
     print('You have chosen to process a bill of sale')
+    print("To go back to the menu, press enter.")
     
     # grab and validate information
     # grabbing vin
     while True:
         vin = input('What is the vehicle identification number (vin)? ')
-        if vin != '' and len(vin) <= 5:
+        if vin == '':
+            return
+        elif vin != '' and len(vin) <= 5:
             break
         else:
             print('Invalid input')
@@ -500,32 +521,46 @@ def four():
     # grabbing current owner
     while True:
         current_fname = input('What is the first name of the current owner? ')
-        if current_fname != '' and current_fname.isalpha() and len(current_fname) <= 12:
+        if current_fname != '' and re.match("^[A-Za-z0-9-]*$", current_fname) and len(current_fname) <= 12:
             break
         else:
             print('Invalid input')
-            
+
+    
     while True:
         current_lname = input('What is the last name of the current owner? ')
-        if current_lname != '' and current_lname.isalpha() and len(current_lname) <= 12:
+        if current_lname != '' and re.match("^[A-Za-z0-9-]*$", current_lname) and len(current_lname) <= 12:
             break
         else:
-            print('Invalid input')      
+            print('Invalid input') 
             
+    # check to see if current owner is in the database
+    if find_person(current_fname, current_lname) == None:
+        print('There is no {} {} in the database'.format(current_fname, current_lname))
+        print('New sale rejected.\n')
+        return;      
+    
     # getting new owner
     while True:
         new_fname = input('What is the first name of the new owner? ')
-        if new_fname != '' and new_fname.isalpha() and len(new_fname) <= 12:
+        if new_fname != '' and re.match("^[A-Za-z0-9-]*$", new_fname) and len(new_fname) <= 12:
             break
         else:
             print('Invalid input')
             
     while True:
         new_lname = input('What is the last name of the new owner? ')
-        if new_lname != '' and new_lname.isalpha() and len(new_lname) <= 12:
+        if new_lname != '' and re.match("^[A-Za-z0-9-]*$", new_lname) and len(new_lname) <= 12:
             break
         else:
-            print('Invalid input')    
+            print('Invalid input')  
+            
+    # check to see if the new person is in the database      
+    new_person = find_person(new_fname, new_lname)
+    if new_person == None:
+        print('There is no {} {} in the database'.format(new_fname, new_lname))
+        print('New sale rejected.\n')
+        return;    
             
     while True:
         plate = input('What is the plate number? ')
@@ -534,34 +569,20 @@ def four():
         else:
             print('Invalid input')
             
-    # check to see if there is a person that exists for both people
-    if find_person(current_fname, current_lname) == None:
-        print('There is no {} {} in the database'.format(current_fname, current_lname))
-        print('New sale rejected.\n')
-        return;        
-    
-    new_person = find_person(new_fname, new_lname)
-    if new_person == None:
-        print('There is no {} {} in the database'.format(current_fname, current_lname))
-        print('New sale rejected.\n')
-        return;
-    
+
+            
     # checking to see if there is such a registration with the vin and plate
     # if there is no registration that exists, reject the sale
     # we are also grabbing the name of the most recent registration of that vin and plate number
     c.execute('SELECT fname, lname, regno, vin FROM registrations WHERE vin LIKE ? and plate LIKE ? ORDER BY regdate DESC;', (vin, plate))
     result = c.fetchone()
     if result == None:
-        print('There is no registration under that vin and plate number')
+        print('There is no current registration under that vin, plate, and name')
         print('New sale rejected.\n')
         return;
     
     vin = result[3]
-    # we need to check if the recent person registered to the car matches the name given to us
-    if result[0].lower() != current_fname.lower() and result[1].lower() != current_lname.lower():
-        print('That is not the most recent person registered to that vehicle')
-        print('New sale rejected.\n')
-        return;
+    
     
     # change expiry date of old owner's car to today's date
     # today is a datetime object so do you need to convert it to a string???
@@ -791,6 +812,8 @@ def seven():
                 datetime.datetime(int(year),int(month),int(day))
                 if len(month) == 1:
                     month = "0" + month   
+                if len(day) == 1:
+                    day = "0" + day                      
                 vdate = year +'-' + month +'-'+ day                    
                 break
             except ValueError:
@@ -822,40 +845,7 @@ def seven():
     
           
 def eight():
-    make = input('Enter a make. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
-    if make == 'exit':
-        return
-    elif make == '':
-        make = '%'
-    model = input('Enter a model. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
-    if model == 'exit':
-        return
-    elif model == '':
-        model = '%'
-    year = input('Enter a year. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
-    if year == 'exit':
-        return
-    elif year == '':
-        year = '%'
-    color = input('Enter a color. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
-    if color == 'exit':
-        return
-    elif color == '':
-        color = '%'
-    plate = input('Enter a plate. Leave blank if you do not wish to search by make. Type exit to return to menu. ')
-    if plate == 'exit':
-        return
-    elif plate == '':
-        plate = '%'
-    if make == '%' and model == '%' and year == '%' and color == '%' and plate == '%':
-        print('You have not entered any values. Returning to main menu')
-        return
-    
-    c.execute('''SELECT DISTINCT fname||' '||lname 
-                FROM registrations r, vehicles v
-                WHERE r.vin = v.vin
-                AND v.make LIKE ? AND v.model LIKE ? AND v.year LIKE ? AND v.color LIKE ? AND r.plate LIKE ?;''', (make, model, year, color, plate))
-    print(c.fetchall())
+    pass
 
 if __name__ == "__main__":
     main()

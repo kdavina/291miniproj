@@ -812,6 +812,8 @@ def six():
                 if next_five_bool != 'y':
                     next_five_bool = False
 
+    print("All tickets printed. Returning to main menu")
+    print()
     conn.commit()
 
 

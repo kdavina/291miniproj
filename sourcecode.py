@@ -5,6 +5,8 @@ import datetime
 import random
 import sys
 
+# Final version
+
 def main():
     global conn, c 
     # path = sys.argv[1] 
@@ -366,7 +368,7 @@ def missing_person_info(fname, lname):
             address = 'NULL'
             break
         else:
-            if address.isalpha() and len(address) <= 30:
+            if re.match("^[ A-Za-z0-9-]*$", fat_lname) and len(address) <= 30:
                 break      
             else:
                 print("Invalid input")        
@@ -452,17 +454,6 @@ def two(username):
     if partner_two == None:
         partner_two = missing_person_info(prt2_fname, prt2_lname)
         
-    """
-    STATED: two people can register for marriage multiple times
-    https://eclass.srv.ualberta.ca/mod/forum/discuss.php?d=1254422
-    # this is to check that the two have not already been registered together
-    c.execute(''' SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ? UNION
-                  SELECT regno FROM marriages WHERE p1_fname LIKE ? and p1_lname LIKE ? and p2_fname LIKE ? and p2_lname LIKE ?;''', (partner_one[0],partner_one[1],partner_two[0], partner_two[1], partner_two[0], partner_two[1], partner_one[0],partner_one[1]))
-    
-    if c.fetchone() != None:
-        print('{} {} and {} {} are already in the marriages database'.format(partner_one[0],partner_one[1],partner_two[0], partner_two[1]))
-        return
-    """
         
     # use datetime function to get and set registration date to today and use a query to find the registration place from users table
     registdate = datetime.date.today()
@@ -610,7 +601,12 @@ def four():
     if result == None:
         print('There is no current registration under that vin, plate, and name')
         print('New sale rejected.\n')
-        return;
+        return
+    # check to see if the latest person is the current person
+    if result[0].lower() != current_fname.lower() and result[1].lower() != current_lname.lower():
+        print("That is not the most recent owner of this vehicle.")
+        print("New sale rejected.\n")
+        return
     
     # assign vin
     # change expiry date of old owner's car to today's date
@@ -631,6 +627,7 @@ def four():
     
     # inserting new registration
     c.execute('INSERT INTO registrations(regno, regdate, expiry, plate, vin, fname, lname) VALUES (?,?,?,?,?,?,?);', (regno, today, new_expiry, plate, vin, new_person[0], new_person[1]))
+    conn.commit()
     print("Bill of Sale successful.\n")
 
 

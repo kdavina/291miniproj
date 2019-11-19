@@ -367,7 +367,7 @@ def missing_person_info(fname, lname):
             address = 'NULL'
             break
         else:
-            if re.match("^[ A-Za-z0-9-]*$", fat_lname) and len(address) <= 30:
+            if re.match("^[ A-Za-z0-9-]*$", address) and len(address) <= 30:
                 break      
             else:
                 print("Invalid input")        

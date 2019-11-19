@@ -367,7 +367,7 @@ def missing_person_info(fname, lname):
             address = 'NULL'
             break
         else:
-            if re.match("^[ A-Za-z0-9-]*$", fat_lname) and len(address) <= 30:
+            if re.match("^[ A-Za-z0-9-]*$", address) and len(address) <= 30:
                 break      
             else:
                 print("Invalid input")        
@@ -654,7 +654,7 @@ def five():
         if find_fine(ticket_no) == False:
             return
     else:
-        print("Invalid entry")
+        print("This ticket number does not exist in the database.")
         
 
 # Check to see if ticket exists in the tickets table in the database       
@@ -862,6 +862,7 @@ def seven():
             regno = c.fetchone()
             if regno == None:
                 print('That registration number does not exist in the database')
+                return
             else:
                 regno = regno[0]
                 break
